@@ -6,25 +6,26 @@
 # Usage :
 #   ./deploy.sh                 # déploie la branche "production"
 #   BRANCH=autre ./deploy.sh    # déploie une autre branche
-#   PHP=/usr/local/php8.3/bin/php COMPOSER_BIN="/usr/local/php8.3/bin/php $HOME/composer.phar" ./deploy.sh
+#   PHP=/usr/local/php8.3/bin/php ./deploy.sh
+#   COMPOSER_BIN="php $HOME/composer.phar" ./deploy.sh
 #
 # La branche "production" est générée par la GitHub Action build-production :
 # elle contient le code de main et les assets déjà compilés (public/build).
-#
-# Composer : la commande "composer" si elle existe, sinon ~/composer.phar ou ./composer.phar lancé avec $PHP.
 #
 
 set -Eeuo pipefail
 
 BRANCH="${BRANCH:-production}"
 REMOTE="${REMOTE:-origin}"
+
+# Binaire PHP. Sur OVH mutualisé, "php" doit pointer sur PHP 8.3+ (PATH dans ~/.bashrc),
+# sinon indiquer le chemin complet (ex. /usr/local/php8.3/bin/php).
 PHP="${PHP:-php}"
 
-# Binaire PHP à utiliser. Sur OVH mutualisé, adapter si nécessaire
-# (ex: "php8.3", ou le chemin complet donné par l'hébergeur).
-COMPOSER_BIN="${COMPOSER_BIN:-php composer.phar}"
-# COMPOSER_BIN peut contenir plusieurs mots (ex: "php composer.phar") :
-# on le découpe en tableau pour l'appeler correctement.
+# Commande Composer : par défaut composer.phar à la racine du projet, lancé avec $PHP.
+# Pas de variable COMPOSER : Composer la lit lui-même comme nom du fichier composer.json.
+COMPOSER_BIN="${COMPOSER_BIN:-$PHP composer.phar}"
+# COMPOSER_BIN peut contenir plusieurs mots : on le découpe en tableau pour l'appeler correctement.
 read -r -a COMPOSER_CMD <<< "$COMPOSER_BIN"
 
 cd "$(dirname "$(readlink -f "$0")")"
@@ -57,7 +58,7 @@ git fetch "$REMOTE" "$BRANCH"
 git reset --hard "$REMOTE/$BRANCH"
 
 step "Installation des dépendances PHP"
-$COMPOSER_BIN install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+"${COMPOSER_CMD[@]}" install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 if [ ! -f public/build/manifest.json ]; then
     echo "public/build/manifest.json introuvable : la branche $BRANCH ne contient pas les assets compilés. Le site reste en maintenance." >&2
@@ -68,14 +69,18 @@ step "Migrations de la base de données"
 $PHP artisan migrate --force
 
 step "Lien de stockage public"
+# Lien relatif : un lien absolu (/home/…) ne serait pas valide pour Apache (voir plus bas).
 if [ ! -e public/storage ]; then
-    $PHP artisan storage:link
+    $PHP artisan storage:link --relative
 fi
 
-step "Mise en cache de la configuration, des routes, des vues et de Filament"
+# Pas de "artisan optimize" : chez OVH, le projet n'a pas le même chemin en SSH (/home/…) que pour Apache
+# (/homez.…/…). Les caches de configuration, de routes, de vues et d'icônes Filament enregistrent des chemins
+# absolus : générés ici, ils font planter le site (erreur 500 sans aucun log). Seul le cache des événements
+# n'en contient pas.
+step "Vidage des caches et mise en cache des événements"
 $PHP artisan optimize:clear
-$PHP artisan optimize
-$PHP artisan filament:optimize
+$PHP artisan event:cache
 
 step "Redémarrage des workers de file d'attente"
 $PHP artisan queue:restart

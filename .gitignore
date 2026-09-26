@@ -39,3 +39,6 @@ Thumbs.db
 
 # Documentation locale
 /README.local.md
+
+# Composer installé sur le serveur, à la racine du projet
+/composer.phar

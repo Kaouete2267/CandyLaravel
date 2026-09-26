@@ -12,7 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Hébergement OVH : le HTTPS est terminé par un proxy, PHP reçoit la requête en http.
+        // Seul X-Forwarded-Proto est pris en compte (pas X-Forwarded-For : l'IP du visiteur,
+        // utilisée par les limites de requêtes, ne doit pas pouvoir être usurpée).
+        $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_PROTO);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
