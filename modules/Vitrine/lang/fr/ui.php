@@ -1,0 +1,52 @@
+<?php
+
+return [
+    'catalogue' => 'Catalogue',
+    'photo_search' => 'Recherche par photo',
+    'language' => 'Langue',
+
+    'search_placeholder' => 'Rechercher un bonbon ou une marque…',
+    'search' => 'Rechercher',
+    'filters' => 'Filtres',
+    'reset' => 'Réinitialiser',
+    'apply' => 'Appliquer',
+    'brands' => 'Marques',
+    'type' => 'Type',
+    'panel' => 'Panneau',
+    'block' => 'Bloc',
+    'all_panels' => 'Tous les panneaux',
+    'all_blocks' => 'Tous les blocs',
+    'sort' => 'Trier par',
+    'sort_name' => 'Nom',
+    'sort_brand' => 'Marque',
+    'sort_panel' => 'Emplacement',
+
+    'allergen_free' => 'Sans allergène',
+    'allergen_hint' => 'Cochez les allergènes à éviter : seuls les bonbons qui n\'en contiennent pas sont affichés.',
+    'exclude_traces' => 'Exclure aussi les traces éventuelles',
+
+    'results' => '{0} Aucun bonbon|{1} :count bonbon|[2,*] :count bonbons',
+    'no_results' => 'Aucun bonbon ne correspond à ces critères.',
+
+    'contains' => 'Contient',
+    'may_contain' => 'Peut contenir des traces de',
+    'no_allergens' => 'Aucun allergène déclaré',
+    'allergens' => 'Allergènes',
+    'ingredients' => 'Ingrédients',
+    'location' => 'Emplacement',
+    'slot' => 'case :n',
+    'back' => '← Retour au catalogue',
+    'brand' => 'Marque',
+
+    'photo_title' => 'Trouver un bonbon avec une photo',
+    'photo_intro' => 'Prenez ou envoyez une photo d\'un bonbon ou d\'un sachet : nous cherchons le produit correspondant dans le catalogue.',
+    'photo_choose' => 'Choisir ou prendre une photo',
+    'photo_go' => 'Rechercher avec cette photo',
+    'photo_analyzing' => 'Analyse de la photo…',
+    'photo_seen' => 'Ce que nous voyons : :text',
+    'photo_matches' => 'Correspondances',
+    'photo_none' => 'Aucun bonbon du catalogue ne semble correspondre. Essayez une photo plus nette, ou parcourez le catalogue ci-dessous.',
+    'photo_rest' => 'Reste du catalogue',
+    'photo_error' => 'La recherche par photo est momentanément indisponible. Réessayez dans un instant.',
+    'photo_match_level' => 'Correspondance : :percent %',
+];

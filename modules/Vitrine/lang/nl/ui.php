@@ -1,0 +1,52 @@
+<?php
+
+return [
+    'catalogue' => 'Catalogus',
+    'photo_search' => 'Zoeken met een foto',
+    'language' => 'Taal',
+
+    'search_placeholder' => 'Zoek een snoepje of merk…',
+    'search' => 'Zoeken',
+    'filters' => 'Filters',
+    'reset' => 'Wissen',
+    'apply' => 'Toepassen',
+    'brands' => 'Merken',
+    'type' => 'Soort',
+    'panel' => 'Paneel',
+    'block' => 'Blok',
+    'all_panels' => 'Alle panelen',
+    'all_blocks' => 'Alle blokken',
+    'sort' => 'Sorteren op',
+    'sort_name' => 'Naam',
+    'sort_brand' => 'Merk',
+    'sort_panel' => 'Plaats',
+
+    'allergen_free' => 'Zonder allergeen',
+    'allergen_hint' => 'Vink de allergenen aan die u wilt vermijden: enkel snoepjes zonder deze allergenen worden getoond.',
+    'exclude_traces' => 'Ook mogelijke sporen uitsluiten',
+
+    'results' => '{0} Geen snoepjes|{1} :count snoepje|[2,*] :count snoepjes',
+    'no_results' => 'Geen enkel snoepje beantwoordt aan deze criteria.',
+
+    'contains' => 'Bevat',
+    'may_contain' => 'Kan sporen bevatten van',
+    'no_allergens' => 'Geen allergenen vermeld',
+    'allergens' => 'Allergenen',
+    'ingredients' => 'Ingrediënten',
+    'location' => 'Plaats',
+    'slot' => 'vak :n',
+    'back' => '← Terug naar de catalogus',
+    'brand' => 'Merk',
+
+    'photo_title' => 'Een snoepje zoeken met een foto',
+    'photo_intro' => 'Neem of upload een foto van een snoepje of zakje: we zoeken het bijhorende product in de catalogus.',
+    'photo_choose' => 'Foto kiezen of nemen',
+    'photo_go' => 'Zoeken met deze foto',
+    'photo_analyzing' => 'Foto wordt geanalyseerd…',
+    'photo_seen' => 'Wat we zien: :text',
+    'photo_matches' => 'Overeenkomsten',
+    'photo_none' => 'Geen enkel snoepje uit de catalogus lijkt overeen te komen. Probeer een scherpere foto of blader door de catalogus hieronder.',
+    'photo_rest' => 'Rest van de catalogus',
+    'photo_error' => 'Zoeken met een foto is momenteel niet beschikbaar. Probeer het zo meteen opnieuw.',
+    'photo_match_level' => 'Overeenkomst: :percent %',
+];

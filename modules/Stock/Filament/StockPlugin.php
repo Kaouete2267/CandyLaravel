@@ -1,0 +1,30 @@
+<?php
+
+namespace Modules\Stock\Filament;
+
+use Filament\Contracts\Plugin;
+use Filament\Panel;
+use Modules\Stock\Filament\Pages\StockGrid;
+use Modules\Stock\Filament\Resources\StockMovementResource;
+
+class StockPlugin implements Plugin
+{
+    public static function make(): static
+    {
+        return app(static::class);
+    }
+
+    public function getId(): string
+    {
+        return 'stock';
+    }
+
+    public function register(Panel $panel): void
+    {
+        $panel
+            ->pages([StockGrid::class])
+            ->resources([StockMovementResource::class]);
+    }
+
+    public function boot(Panel $panel): void {}
+}

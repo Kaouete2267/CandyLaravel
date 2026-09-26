@@ -1,0 +1,56 @@
+name: Build production
+
+# Compile les assets Vite à chaque push sur main et publie le résultat
+# (code de main + public/build) sur la branche "production", déployée par deploy.sh.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-production
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer:v2
+          coverage: none
+
+      # Le thème Filament et Tailwind lisent des fichiers dans vendor/.
+      - name: Install Composer dependencies
+        run: composer install --no-dev --no-scripts --no-progress --prefer-dist --ignore-platform-reqs
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Install npm dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Publish to production branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B production
+          git add -f public/build
+          git commit -m "Build assets for ${GITHUB_SHA::7}"
+          git push --force origin production

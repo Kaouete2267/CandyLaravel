@@ -1,0 +1,52 @@
+<?php
+
+return [
+    'catalogue' => 'Catalogue',
+    'photo_search' => 'Search by photo',
+    'language' => 'Language',
+
+    'search_placeholder' => 'Search for a sweet or a brand…',
+    'search' => 'Search',
+    'filters' => 'Filters',
+    'reset' => 'Reset',
+    'apply' => 'Apply',
+    'brands' => 'Brands',
+    'type' => 'Type',
+    'panel' => 'Panel',
+    'block' => 'Block',
+    'all_panels' => 'All panels',
+    'all_blocks' => 'All blocks',
+    'sort' => 'Sort by',
+    'sort_name' => 'Name',
+    'sort_brand' => 'Brand',
+    'sort_panel' => 'Location',
+
+    'allergen_free' => 'Allergen free',
+    'allergen_hint' => 'Tick the allergens you want to avoid: only sweets without them are shown.',
+    'exclude_traces' => 'Also exclude possible traces',
+
+    'results' => '{0} No sweets|{1} :count sweet|[2,*] :count sweets',
+    'no_results' => 'No sweet matches these criteria.',
+
+    'contains' => 'Contains',
+    'may_contain' => 'May contain traces of',
+    'no_allergens' => 'No declared allergens',
+    'allergens' => 'Allergens',
+    'ingredients' => 'Ingredients',
+    'location' => 'Location',
+    'slot' => 'slot :n',
+    'back' => '← Back to the catalogue',
+    'brand' => 'Brand',
+
+    'photo_title' => 'Find a sweet with a photo',
+    'photo_intro' => 'Take or upload a photo of a sweet or a bag: we look for the matching product in the catalogue.',
+    'photo_choose' => 'Choose or take a photo',
+    'photo_go' => 'Search with this photo',
+    'photo_analyzing' => 'Analysing the photo…',
+    'photo_seen' => 'What we see: :text',
+    'photo_matches' => 'Matches',
+    'photo_none' => 'No sweet in the catalogue seems to match. Try a sharper photo, or browse the catalogue below.',
+    'photo_rest' => 'Rest of the catalogue',
+    'photo_error' => 'Photo search is temporarily unavailable. Please try again in a moment.',
+    'photo_match_level' => 'Match: :percent %',
+];

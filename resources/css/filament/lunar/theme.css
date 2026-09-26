@@ -1,0 +1,10 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/* Ce projet organise son code en modules (modules/<Nom>/...), pas dans app/Filament : les ressources, pages,
+   actions et vues Filament de tous les modules doivent être scannées pour que leurs classes Tailwind (y
+   compris les surcharges de vues vendor, ex. modules/Admin/resources/views/vendor/filament-panels/...)
+   soient effectivement compilées ici. */
+@source '../../../../modules/**/*.php';

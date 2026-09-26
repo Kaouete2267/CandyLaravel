@@ -1,0 +1,9 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Sous WAMP (http://localhost/bonbon/), seul public/ doit être accessible : sans cela,
+    # .env, storage/logs, vendor, modules… seraient téléchargeables depuis le navigateur.
+    # Avec un VirtualHost dont le DocumentRoot pointe sur public/, ce fichier n'est jamais lu.
+    RewriteRule ^$ public/ [R=302,L]
+    RewriteRule !^public/ - [F,L]
+</IfModule>
