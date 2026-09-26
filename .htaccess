@@ -1,9 +1,9 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Sous WAMP (http://localhost/bonbon/), seul public/ doit être accessible : sans cela,
-    # .env, storage/logs, vendor, modules… seraient téléchargeables depuis le navigateur.
+    # Quand le domaine pointe sur la racine du projet (hébergement OVH, WAMP sans VirtualHost),
+    # toutes les requêtes sont servies par public/ : réécriture interne, l'URL affichée ne change pas.
+    # Rien en dehors de public/ n'est accessible (.env, storage, vendor, modules…).
     # Avec un VirtualHost dont le DocumentRoot pointe sur public/, ce fichier n'est jamais lu.
-    RewriteRule ^$ public/ [R=302,L]
-    RewriteRule !^public/ - [F,L]
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
