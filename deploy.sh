@@ -6,10 +6,12 @@
 # Usage :
 #   ./deploy.sh                 # déploie la branche "production"
 #   BRANCH=autre ./deploy.sh    # déploie une autre branche
+#   PHP=/usr/local/php8.3/bin/php COMPOSER_BIN="/usr/local/php8.3/bin/php $HOME/composer.phar" ./deploy.sh
 #
 # La branche "production" est générée par la GitHub Action build-production :
 # elle contient le code de main et les assets déjà compilés (public/build).
-#   PHP=/usr/bin/php8.3 COMPOSER="php8.3 /usr/local/bin/composer" ./deploy.sh
+#
+# Composer : la commande "composer" si elle existe, sinon ~/composer.phar ou ./composer.phar lancé avec $PHP.
 #
 
 set -Eeuo pipefail
@@ -17,7 +19,13 @@ set -Eeuo pipefail
 BRANCH="${BRANCH:-production}"
 REMOTE="${REMOTE:-origin}"
 PHP="${PHP:-php}"
-COMPOSER="${COMPOSER:-composer}"
+
+# Binaire PHP à utiliser. Sur OVH mutualisé, adapter si nécessaire
+# (ex: "php8.3", ou le chemin complet donné par l'hébergeur).
+COMPOSER_BIN="${COMPOSER_BIN:-php composer.phar}"
+# COMPOSER_BIN peut contenir plusieurs mots (ex: "php composer.phar") :
+# on le découpe en tableau pour l'appeler correctement.
+read -r -a COMPOSER_CMD <<< "$COMPOSER_BIN"
 
 cd "$(dirname "$(readlink -f "$0")")"
 
@@ -36,6 +44,11 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1 || ! git remote get-url "$REMOTE" >/dev/null 2>&1; then
+    echo "Ce dossier n'est pas un dépôt git relié à GitHub (remote \"$REMOTE\") : initialisez-le avant de déployer." >&2
+    exit 1
+fi
+
 step "Passage en mode maintenance"
 $PHP artisan down --retry=60 || true
 
@@ -44,7 +57,7 @@ git fetch "$REMOTE" "$BRANCH"
 git reset --hard "$REMOTE/$BRANCH"
 
 step "Installation des dépendances PHP"
-$COMPOSER install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+$COMPOSER_BIN install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
 if [ ! -f public/build/manifest.json ]; then
     echo "public/build/manifest.json introuvable : la branche $BRANCH ne contient pas les assets compilés. Le site reste en maintenance." >&2
