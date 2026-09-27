@@ -33,13 +33,18 @@ use Modules\Panneaux\Models\Panel;
 use Modules\Panneaux\Support\BoardData;
 use Modules\Panneaux\Support\PanelSettings;
 use Modules\Support\Modules;
+use Modules\Support\RequiresStaffPermission;
 use UnitEnum;
 
 class PanelResource extends Resource
 {
+    use RequiresStaffPermission;
+
     protected static ?string $model = Panel::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
+
+    protected static string $permission = 'confiserie:manage-panels';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 

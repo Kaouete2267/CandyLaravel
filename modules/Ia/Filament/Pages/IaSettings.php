@@ -14,7 +14,7 @@ use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Modules\Ia\Models\IaSetting;
-use UnitEnum;
+use Modules\Support\RequiresStaffPermission;
 
 /**
  * Réglages IA modifiables depuis le backoffice : la clé Gemini ne vivait jusqu'ici que dans le .env,
@@ -23,10 +23,11 @@ use UnitEnum;
 class IaSettings extends Page implements HasSchemas
 {
     use InteractsWithSchemas;
+    use RequiresStaffPermission;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Réglages';
+    protected static string $permission = 'settings:manage-ai';
 
     protected static ?string $navigationLabel = 'Réglages IA';
 
@@ -37,6 +38,11 @@ class IaSettings extends Page implements HasSchemas
     protected string $view = 'ia::pages.settings';
 
     public ?array $data = [];
+
+    public static function getNavigationGroup(): ?string
+    {
+        return __('lunarpanel::global.sections.settings');
+    }
 
     public function mount(): void
     {

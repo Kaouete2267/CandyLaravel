@@ -34,6 +34,7 @@ use Modules\Stock\Enums\StockReason;
 use Modules\Stock\Services\StockService;
 use Modules\Support\Modules;
 use Modules\Support\ProductCreator;
+use Modules\Support\RequiresStaffPermission;
 use Modules\Support\TranslatedFields;
 use UnitEnum;
 
@@ -44,8 +45,11 @@ use UnitEnum;
 class CreateProductWithAi extends Page implements HasSchemas
 {
     use InteractsWithSchemas;
+    use RequiresStaffPermission;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
+
+    protected static string $permission = 'confiserie:create-product-with-ai';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 

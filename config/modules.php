@@ -6,7 +6,6 @@ use Modules\Ia\IaServiceProvider;
 use Modules\Invitations\InvitationsServiceProvider;
 use Modules\Legacy\LegacyServiceProvider;
 use Modules\Menu\MenuServiceProvider;
-use Modules\Onboarding\OnboardingServiceProvider;
 use Modules\Panneaux\PanneauxServiceProvider;
 use Modules\Stock\StockServiceProvider;
 use Modules\Types\TypesServiceProvider;
@@ -30,7 +29,6 @@ return [
         InvitationsServiceProvider::class,
         IaServiceProvider::class,
         VitrineServiceProvider::class,
-        OnboardingServiceProvider::class,
         LegacyServiceProvider::class,
     ],
 ];

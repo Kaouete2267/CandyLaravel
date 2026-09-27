@@ -23,6 +23,7 @@ use Modules\Ia\Filament\Resources\IngredientTermResource\Pages\ManageIngredientT
 use Modules\Ia\Models\IngredientTerm;
 use Modules\Ia\Services\IngredientGlossary;
 use Modules\Ia\Support\IngredientCategory;
+use Modules\Support\RequiresStaffPermission;
 use UnitEnum;
 
 /**
@@ -38,9 +39,13 @@ use UnitEnum;
  */
 class IngredientTermResource extends Resource
 {
+    use RequiresStaffPermission;
+
     protected static ?string $model = IngredientTerm::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBookOpen;
+
+    protected static string $permission = 'confiserie:manage-ingredient-terms';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 

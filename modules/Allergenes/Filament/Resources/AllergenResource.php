@@ -15,14 +15,19 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Modules\Allergenes\Filament\Resources\AllergenResource\Pages\ManageAllergens;
 use Modules\Allergenes\Models\Allergen;
+use Modules\Support\RequiresStaffPermission;
 use Modules\Support\TranslatedFields;
 use UnitEnum;
 
 class AllergenResource extends Resource
 {
+    use RequiresStaffPermission;
+
     protected static ?string $model = Allergen::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedExclamationTriangle;
+
+    protected static string $permission = 'confiserie:manage-allergens';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 

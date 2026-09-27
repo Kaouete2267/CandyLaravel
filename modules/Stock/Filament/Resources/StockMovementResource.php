@@ -12,14 +12,19 @@ use Illuminate\Database\Eloquent\Builder;
 use Modules\Stock\Enums\StockReason;
 use Modules\Stock\Filament\Resources\StockMovementResource\Pages\ListStockMovements;
 use Modules\Stock\Models\StockMovement;
+use Modules\Support\RequiresStaffPermission;
 use UnitEnum;
 
 /** Journal en lecture seule de tous les mouvements de stock. */
 class StockMovementResource extends Resource
 {
+    use RequiresStaffPermission;
+
     protected static ?string $model = StockMovement::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentList;
+
+    protected static string $permission = 'confiserie:view-stock-history';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 

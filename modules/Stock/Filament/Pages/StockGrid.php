@@ -16,6 +16,7 @@ use Modules\Stock\Models\StockMovement;
 use Modules\Stock\Services\InsufficientStock;
 use Modules\Stock\Services\StockService;
 use Modules\Support\Modules;
+use Modules\Support\RequiresStaffPermission;
 use UnitEnum;
 
 /**
@@ -24,7 +25,11 @@ use UnitEnum;
  */
 class StockGrid extends Page
 {
+    use RequiresStaffPermission;
+
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedArchiveBox;
+
+    protected static string $permission = 'confiserie:manage-stock';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 

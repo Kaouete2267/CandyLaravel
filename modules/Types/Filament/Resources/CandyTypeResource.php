@@ -15,6 +15,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Support\RequiresStaffPermission;
 use Modules\Support\TranslatedFields;
 use Modules\Types\Filament\Resources\CandyTypeResource\Pages\ManageCandyTypes;
 use Modules\Types\Models\CandyType;
@@ -22,9 +23,13 @@ use UnitEnum;
 
 class CandyTypeResource extends Resource
 {
+    use RequiresStaffPermission;
+
     protected static ?string $model = CandyType::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
+
+    protected static string $permission = 'confiserie:manage-candy-types';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 

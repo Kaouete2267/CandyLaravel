@@ -29,7 +29,6 @@ class MenuPlugin implements Plugin
         'Settings' => Heroicon::OutlinedCog6Tooth,
         'Paramètres' => Heroicon::OutlinedCog6Tooth,
         'Confiserie' => Heroicon::OutlinedCake,
-        'Réglages' => Heroicon::OutlinedAdjustmentsHorizontal,
         'Aide' => Heroicon::OutlinedLifebuoy,
     ];
 

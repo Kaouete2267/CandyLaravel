@@ -75,9 +75,13 @@ step "Migrations de la base de données"
 $PHP artisan migrate --force
 
 step "Lien de stockage public"
-# Lien relatif : un lien absolu (/home/…) ne serait pas valide pour Apache (voir plus bas).
-if [ ! -e public/storage ]; then
-    $PHP artisan storage:link --relative
+# Lien relatif : un lien absolu (/home/…) n'est pas valide pour Apache, qui voit le projet sous /homez.…
+# (voir plus bas) et répond 403 sur les images. Créé avec ln : "storage:link --relative" exige symfony/filesystem.
+if [ -L public/storage ] && [ "$(readlink public/storage)" != "../storage/app/public" ]; then
+    rm public/storage
+fi
+if [ ! -e public/storage ] && [ ! -L public/storage ]; then
+    ln -s ../storage/app/public public/storage
 fi
 
 # Pas de "artisan optimize" : chez OVH, le projet n'a pas le même chemin en SSH (/home/…) que pour Apache

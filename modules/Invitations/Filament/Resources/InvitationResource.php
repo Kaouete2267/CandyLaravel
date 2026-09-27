@@ -15,13 +15,18 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Modules\Invitations\Filament\Resources\InvitationResource\Pages\ManageInvitations;
 use Modules\Invitations\Models\Invitation;
+use Modules\Support\RequiresStaffPermission;
 use UnitEnum;
 
 class InvitationResource extends Resource
 {
+    use RequiresStaffPermission;
+
     protected static ?string $model = Invitation::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTicket;
+
+    protected static string $permission = 'confiserie:manage-invitations';
 
     protected static string|UnitEnum|null $navigationGroup = 'Confiserie';
 
