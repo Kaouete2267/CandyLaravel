@@ -42,3 +42,6 @@ Thumbs.db
 
 # Composer installé sur le serveur, à la racine du projet
 /composer.phar
+
+# Assets Livewire publiés par deploy.sh
+/public/vendor/livewire

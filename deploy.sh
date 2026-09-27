@@ -60,6 +60,12 @@ git reset --hard "$REMOTE/$BRANCH"
 step "Installation des dépendances PHP"
 "${COMPOSER_CMD[@]}" install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
+# Chez OVH, livewire.min.js servi par PHP (route /livewire/…) arrive tronqué (ERR_HTTP2_PROTOCOL_ERROR) :
+# sans lui, les formulaires Filament ne marchent pas (connexion en boucle). Une copie statique dans
+# public/vendor/livewire est servie directement par Apache ; republiée à chaque déploiement pour suivre la version.
+step "Publication des assets Livewire"
+$PHP artisan vendor:publish --tag=livewire:assets --force
+
 if [ ! -f public/build/manifest.json ]; then
     echo "public/build/manifest.json introuvable : la branche $BRANCH ne contient pas les assets compilés. Le site reste en maintenance." >&2
     exit 1
