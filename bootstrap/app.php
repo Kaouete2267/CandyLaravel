@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\DropContentLengthWhenPhpCompresses;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Seul X-Forwarded-Proto est pris en compte (pas X-Forwarded-For : l'IP du visiteur,
         // utilisée par les limites de requêtes, ne doit pas pouvoir être usurpée).
         $middleware->trustProxies(at: '*', headers: Request::HEADER_X_FORWARDED_PROTO);
+        $middleware->append(DropContentLengthWhenPhpCompresses::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
