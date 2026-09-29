@@ -4,9 +4,11 @@ namespace Modules\Ia\Filament;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Lunar\Admin\Filament\Resources\ProductResource\Pages\EditProduct;
 use Modules\Ia\Filament\Pages\CreateProductWithAi;
 use Modules\Ia\Filament\Pages\IaSettings;
 use Modules\Ia\Filament\Resources\IngredientTermResource;
+use Modules\Support\ModuleStyles;
 
 class IaPlugin implements Plugin
 {
@@ -24,6 +26,8 @@ class IaPlugin implements Plugin
     {
         $panel->pages([CreateProductWithAi::class, IaSettings::class]);
         $panel->resources([IngredientTermResource::class]);
+
+        ModuleStyles::register($panel, 'Ia', pages: [EditProduct::class]);
     }
 
     public function boot(Panel $panel): void {}

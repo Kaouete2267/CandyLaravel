@@ -1,0 +1,2 @@
+/* Point d'entrée CSS du module, chargé sur l'édition de produit (modale de relecture des ingrédients, voir IaPlugin). */
+@import './partials/ia.css';

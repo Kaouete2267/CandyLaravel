@@ -91,25 +91,6 @@ class PanelResource extends Resource
         $section = fn (string $slug) => ['class' => "pnl-sec pnl-sec-{$slug}"];
 
         return [
-            // Fond de couleur sur l'entête de chaque section, pour bien les séparer visuellement les unes des autres.
-            Html::make(new HtmlString(<<<'HTML'
-                <style>
-                    .pnl-sec .fi-section-header { border-bottom: 1px solid rgba(0,0,0,.06); }
-                    .dark .pnl-sec .fi-section-header { border-bottom-color: rgba(255,255,255,.08); }
-                    .pnl-sec-page .fi-section-header { background: color-mix(in srgb, #6366f1 12%, transparent); }
-                    .pnl-sec-titre .fi-section-header { background: color-mix(in srgb, #f59e0b 12%, transparent); }
-                    .pnl-sec-etiquettes .fi-section-header { background: color-mix(in srgb, #10b981 12%, transparent); }
-                    .pnl-sec-blocs .fi-section-header { background: color-mix(in srgb, #ec4899 12%, transparent); }
-                    .pnl-sec-apercu .fi-section-header { background: color-mix(in srgb, #0ea5e9 12%, transparent); }
-                    /* Aperçu en direct : une étiquette et un bloc d'information exemples, à l'échelle d'origine. */
-                    .pnl-apercu { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; padding: .9rem; background: var(--gray-50); border-radius: .6rem; }
-                    .dark .pnl-apercu { background: var(--gray-800); }
-                    .pnl-apercu > div { width: 260px; max-width: 100%; }
-                    .pnl-apercu-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--gray-500); margin: 0 0 .35rem; }
-                </style>
-                HTML
-            )),
-
             Section::make('Aperçu en direct')->extraAttributes($section('apercu'))
                 ->description('Se met à jour à chaque changement des réglages « Étiquettes de bonbons » et « Blocs d\'information » ci-dessous.')
                 ->schema([self::livePreview()]),
@@ -169,7 +150,7 @@ class PanelResource extends Resource
 
     /**
      * Étiquette et bloc d'information exemples, redessinés à chaque changement des réglages de style
-     * (mêmes vues/classes CSS que le rendu réel : `panneaux::partials.label` + `board-style`).
+     * (mêmes vues/classes CSS que le rendu réel : `panneaux::partials.label` + resources/css/partials/board.css).
      */
     private static function livePreview(): Html
     {
@@ -197,8 +178,7 @@ class PanelResource extends Resource
                 .'Ceci est un aperçu du style. Le contenu, la position et la largeur de chaque bloc se règlent dans l\'onglet Rendu.</div></div>';
 
             return new HtmlString(
-                view('panneaux::partials.board-style')->render()
-                .'<div class="pnl-allergene-'.e($s['bonbon']['allergene']).' pnl-apercu">'
+                '<div class="pnl-allergene-'.e($s['bonbon']['allergene']).' pnl-apercu">'
                 .'<div><p class="pnl-apercu-label">Étiquette</p>'.view('panneaux::partials.label', ['l' => $label, 's' => $s])->render().'</div>'
                 .'<div><p class="pnl-apercu-label">Bloc d\'information</p>'.$infoHtml.'</div>'
                 .'</div>'

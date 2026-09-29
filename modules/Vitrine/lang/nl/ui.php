@@ -40,7 +40,8 @@ return [
 
     'photo_title' => 'Een snoepje zoeken met een foto',
     'photo_intro' => 'Neem of upload een foto van een snoepje of zakje: we zoeken het bijhorende product in de catalogus.',
-    'photo_choose' => 'Foto kiezen of nemen',
+    'photo_choose' => 'Foto kiezen',
+    'photo_take' => 'Foto nemen',
     'photo_go' => 'Zoeken met deze foto',
     'photo_analyzing' => 'Foto wordt geanalyseerd…',
     'photo_seen' => 'Wat we zien: :text',

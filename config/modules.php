@@ -2,6 +2,7 @@
 
 use Modules\Admin\AdminServiceProvider;
 use Modules\Allergenes\AllergenesServiceProvider;
+use Modules\BackendHeader\BackendHeaderServiceProvider;
 use Modules\Ia\IaServiceProvider;
 use Modules\Invitations\InvitationsServiceProvider;
 use Modules\Legacy\LegacyServiceProvider;
@@ -21,6 +22,7 @@ use Modules\Vitrine\VitrineServiceProvider;
 return [
     'enabled' => [
         AdminServiceProvider::class,
+        BackendHeaderServiceProvider::class,
         MenuServiceProvider::class,
         PanneauxServiceProvider::class,
         TypesServiceProvider::class,

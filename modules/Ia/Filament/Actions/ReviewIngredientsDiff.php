@@ -98,7 +98,6 @@ class ReviewIngredientsDiff
                     ->description('Ce que l\'IA propose pour chaque langue, changements par rapport à l\'ancien texte surlignés.')
                     ->icon(Heroicon::Sparkles)
                     ->schema([
-                        Html::make(fn () => new HtmlString((string) view('ia::actions.diff-styles'))),
                         Tabs::make('suggestions')
                             ->tabs(collect($locales)->map(fn (string $locale) => Tab::make(strtoupper($locale))
                                 ->schema([

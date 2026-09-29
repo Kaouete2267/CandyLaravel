@@ -1,10 +1,51 @@
 @import '../../../../vendor/filament/filament/resources/css/theme.css';
 
+/* Ce thème ne contient que les styles globaux du panneau. Ceux des modules sont dans leur propre point d'entrée
+   (modules/<Nom>/resources/css/module.css), compilé à part et chargé sur leurs pages (Modules\Support\ModuleStyles). */
+
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 
 /* Ce projet organise son code en modules (modules/<Nom>/...), pas dans app/Filament : les ressources, pages,
    actions et vues Filament de tous les modules doivent être scannées pour que leurs classes Tailwind (y
-   compris les surcharges de vues vendor, ex. modules/Admin/resources/views/vendor/filament-panels/...)
+   compris les surcharges de vues vendor, ex. modules/BackendHeader/resources/views/vendor/filament-panels/...)
    soient effectivement compilées ici. */
 @source '../../../../modules/**/*.php';
+
+/* Certaines pages (ex. commandes Lunar) fixent leur propre largeur maximale ; on neutralise ce plafond pour que
+   le contenu (et donc les panneaux latéraux droits) exploite toute la largeur disponible à l'écran. */
+.fi-main {
+    @apply max-w-full;
+}
+
+/* Sur mobile, la barre de recherche des tables est trop large pour tenir à côté des actions de masse :
+   le bouton d'actions se retrouvait seul sur sa ligne. On extrait donc les éléments du bloc de droite
+   (display: contents) pour placer la recherche en premier sur toute la largeur, puis les actions de
+   masse à gauche et les boutons filtres / colonnes à droite sur la ligne suivante. */
+.fi-ta-header-toolbar {
+    & > :has(> .fi-ta-search-field) {
+        @apply max-sm:contents;
+    }
+
+    & .fi-ta-search-field {
+        @apply max-sm:order-first max-sm:w-full;
+    }
+
+    & .fi-ta-search-field + * {
+        @apply max-sm:ms-auto;
+    }
+}
+
+/* Éditeur riche (Filament RichEditor / TipTap-ProseMirror) : en thème sombre, le curseur texte
+   disparaît dès qu'il franchit une limite de mise en forme (gras…) ou se place à côté d'un nœud
+   bloc (ex: <hr>). ProseMirror masque alors le vrai curseur du navigateur — et la sélection — sur
+   TOUS les descendants de l'éditeur (règle du cœur ProseMirror : « .ProseMirror-hideselection * »,
+   donc les descendants, pas l'élément lui-même) le temps de dessiner son propre curseur. Et ce
+   curseur de substitution ("gap cursor", utilisé pour les positions à côté d'un <hr>/image/tableau)
+   est codé en dur en noir — invisible sur fond sombre. On force donc un curseur, une sélection et un
+   gap cursor lisibles dans les deux thèmes, en ciblant explicitement les mêmes descendants. */
+.fi-fo-rich-editor .ProseMirror-hideselection,
+.fi-fo-rich-editor .ProseMirror-hideselection * { caret-color: auto !important; }
+.fi-fo-rich-editor .ProseMirror-hideselection *::selection { background: rgba(59, 130, 246, .35) !important; }
+.fi-fo-rich-editor .ProseMirror-hideselection *::-moz-selection { background: rgba(59, 130, 246, .35) !important; }
+.fi-fo-rich-editor .ProseMirror-gapcursor:after { border-top-color: currentColor; }

@@ -1,0 +1,5 @@
+/* Point d'entrée CSS du module, chargé sur toutes les pages du panneau (voir BackendHeaderPlugin).
+   @reference donne accès aux classes et variables du thème du panneau pour @apply, sans les recompiler ici. */
+@reference 'panel-theme';
+
+@import './partials/backend-header.css';

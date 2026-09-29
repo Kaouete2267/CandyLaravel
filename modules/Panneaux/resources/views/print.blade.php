@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="robots" content="noindex">
     <title>{{ $panel->name }} — impression</title>
-    @include('panneaux::partials.board-style')
+    @vite(\Modules\Support\ModuleStyles::entryPoint('Panneaux'))
     <style>
         @page { size: {{ $data['settings']['page']['orientation'] === 'paysage' ? '297mm 210mm' : '210mm 297.15mm' }}; margin: 0; }
         html, body { margin: 0; background: #e5e5e5; }

@@ -40,7 +40,8 @@ return [
 
     'photo_title' => 'Trouver un bonbon avec une photo',
     'photo_intro' => 'Prenez ou envoyez une photo d\'un bonbon ou d\'un sachet : nous cherchons le produit correspondant dans le catalogue.',
-    'photo_choose' => 'Choisir ou prendre une photo',
+    'photo_choose' => 'Choisir une photo',
+    'photo_take' => 'Prendre une photo',
     'photo_go' => 'Rechercher avec cette photo',
     'photo_analyzing' => 'Analyse de la photo…',
     'photo_seen' => 'Ce que nous voyons : :text',

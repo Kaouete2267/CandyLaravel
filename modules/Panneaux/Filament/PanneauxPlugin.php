@@ -6,7 +6,10 @@ use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Illuminate\Support\Facades\Route;
 use Modules\Panneaux\Filament\Resources\PanelResource;
+use Modules\Panneaux\Filament\Resources\PanelResource\Pages\CreatePanel;
+use Modules\Panneaux\Filament\Resources\PanelResource\Pages\EditPanel;
 use Modules\Panneaux\Http\Controllers\PrintPanelController;
+use Modules\Support\ModuleStyles;
 
 class PanneauxPlugin implements Plugin
 {
@@ -28,6 +31,8 @@ class PanneauxPlugin implements Plugin
             ->authenticatedRoutes(function () {
                 Route::get('panneaux/{panel}/impression', PrintPanelController::class)->name('panneaux.print');
             });
+
+        ModuleStyles::register($panel, 'Panneaux', pages: [CreatePanel::class, EditPanel::class]);
     }
 
     public function boot(Panel $panel): void {}

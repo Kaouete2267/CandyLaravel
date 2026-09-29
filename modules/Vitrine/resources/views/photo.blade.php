@@ -8,8 +8,10 @@
 
     <form class="dropzone" method="POST" action="{{ route('vitrine.photo.search') }}" enctype="multipart/form-data" id="photo-form">
         @csrf
-        <label class="btn ghost" for="photo">📷 {{ __('vitrine::ui.photo_choose') }}</label>
-        <input class="sr" id="photo" type="file" name="photo" accept="image/*" capture="environment" required>
+        <label class="btn ghost touch-only" for="photo-camera">📷 {{ __('vitrine::ui.photo_take') }}</label>
+        <input class="sr" id="photo-camera" type="file" accept="image/*" capture="environment">
+        <label class="btn ghost" for="photo">🖼️ {{ __('vitrine::ui.photo_choose') }}</label>
+        <input class="sr" id="photo" type="file" name="photo" accept="image/*">
         <img class="preview" id="preview" alt="">
         <button class="btn" type="submit" id="go">{{ __('vitrine::ui.photo_go') }}</button>
         @error('photo') <span style="color:var(--bad)">{{ $message }}</span> @enderror
@@ -57,14 +59,25 @@
     </div>
 
     <script>
-        const input = document.getElementById('photo'), preview = document.getElementById('preview'), form = document.getElementById('photo-form');
-        input.addEventListener('change', () => {
+        const inputs = [document.getElementById('photo-camera'), document.getElementById('photo')], preview = document.getElementById('preview'), form = document.getElementById('photo-form');
+        // Seul l'input qui a reçu la dernière photo (appareil photo ou galerie) est envoyé sous le nom « photo ».
+        inputs.forEach((input) => input.addEventListener('change', () => {
             const file = input.files[0];
             if (!file) return;
+            inputs.forEach((other) => {
+                if (other === input) return;
+                other.value = '';
+                other.removeAttribute('name');
+            });
+            input.name = 'photo';
             preview.src = URL.createObjectURL(file);
             preview.style.display = 'block';
-        });
-        form.addEventListener('submit', () => {
+        }));
+        form.addEventListener('submit', (event) => {
+            if (!inputs.some((input) => input.files.length)) {
+                event.preventDefault();
+                return;
+            }
             const go = document.getElementById('go');
             go.disabled = true;
             go.textContent = @json(__('vitrine::ui.photo_analyzing'));

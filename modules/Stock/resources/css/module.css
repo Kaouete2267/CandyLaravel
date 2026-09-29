@@ -1,0 +1,2 @@
+/* Point d'entrée CSS du module, chargé sur la page Stock uniquement (voir StockPlugin). */
+@import './partials/stock.css';

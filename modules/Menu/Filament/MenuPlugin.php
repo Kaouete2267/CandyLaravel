@@ -8,8 +8,8 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use Filament\Panel;
 use Filament\Support\Icons\Heroicon;
-use Filament\View\PanelsRenderHook;
 use Illuminate\Contracts\Support\Htmlable;
+use Modules\Support\ModuleStyles;
 
 class MenuPlugin implements Plugin
 {
@@ -77,54 +77,9 @@ class MenuPlugin implements Plugin
     {
         // Le repli du menu est géré par le panneau des sous-pages (bouton « ») ; celui de Filament, qui réduit
         // la barre latérale à une colonne d'icônes, ferait doublon.
-        $panel
-            ->sidebarCollapsibleOnDesktop(false)
-            ->renderHook(PanelsRenderHook::STYLES_AFTER, fn (): string => $this->getMobileHeaderStyles());
-    }
+        $panel->sidebarCollapsibleOnDesktop(false);
 
-    /**
-     * En mobile, le bouton burger de Filament (seul moyen d'ouvrir le menu, replié hors écran) occupe par
-     * défaut sa propre ligne au-dessus de la page. On le fixe en haut à gauche, exactement à l'emplacement de
-     * la croix de fermeture du menu ouvert (même largeur que la colonne des groupes : ps-2 + w-20 = 6rem ;
-     * même retrait vertical : py-2 de la barre + py-2 de la colonne = 1rem), et on remonte le titre de la page
-     * sur la même ligne (padding-top de l'en-tête sticky réduit, voir la surcharge du module Admin), décalé
-     * pour laisser la place au bouton. Entre sm et lg, le fil d'Ariane (une ligne + mb-2 = 1.75rem)
-     * s'intercale au-dessus du titre et décale d'autant le bouton.
-     */
-    protected function getMobileHeaderStyles(): string
-    {
-        return <<<'HTML'
-            <style>
-                @media (width < 64rem) {
-                    .fi-body > .fi-layout-sidebar-toggle-btn-ctn {
-                        position: fixed;
-                        top: 0;
-                        inset-inline-start: 0;
-                        z-index: 25;
-                        display: flex;
-                        justify-content: center;
-                        align-items: flex-start;
-                        width: 6rem;
-                        padding: 1rem 0 0;
-                    }
-
-                    .fi-page-header-main-ctn {
-                        padding-top: 0;
-                    }
-
-                    .fi-header {
-                        padding-top: 0.625rem;
-                        padding-inline-start: 3.75rem;
-                    }
-                }
-
-                @media (40rem <= width < 64rem) {
-                    .fi-body:has(.fi-header-has-breadcrumbs) > .fi-layout-sidebar-toggle-btn-ctn {
-                        padding-top: 2.75rem;
-                    }
-                }
-            </style>
-            HTML;
+        ModuleStyles::register($panel, 'Menu', pages: null);
     }
 
     public function boot(Panel $panel): void {}

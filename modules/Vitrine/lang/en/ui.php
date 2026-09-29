@@ -40,7 +40,8 @@ return [
 
     'photo_title' => 'Find a sweet with a photo',
     'photo_intro' => 'Take or upload a photo of a sweet or a bag: we look for the matching product in the catalogue.',
-    'photo_choose' => 'Choose or take a photo',
+    'photo_choose' => 'Choose a photo',
+    'photo_take' => 'Take a photo',
     'photo_go' => 'Search with this photo',
     'photo_analyzing' => 'Analysing the photo…',
     'photo_seen' => 'What we see: :text',

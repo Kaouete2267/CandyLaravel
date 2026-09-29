@@ -10,7 +10,8 @@ use Modules\Menu\Filament\MenuPlugin;
  * listant les groupes de navigation (icône + titre), et un panneau affichant les pages du groupe cliqué.
  *
  * La vue `filament-panels::livewire.sidebar` est surchargée via `prependNamespace()` (même mécanisme et même
- * raison que Modules\Admin\AdminServiceProvider).
+ * raison que Modules\BackendHeader\BackendHeaderServiceProvider). Ses styles (bouton burger en mobile) sont dans
+ * resources/css/partials/menu.css, chargé sur toutes les pages par MenuPlugin.
  */
 class MenuServiceProvider extends ServiceProvider
 {

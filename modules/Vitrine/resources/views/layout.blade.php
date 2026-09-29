@@ -70,6 +70,7 @@
         .dropzone { border:2px dashed var(--line); border-radius:1rem; padding:1.25rem; background:var(--card); display:flex; gap:1rem; flex-wrap:wrap; align-items:center; margin-bottom:1.25rem; }
         .dropzone img.preview { max-height:6rem; border-radius:.6rem; display:none; }
         .sr { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+        @media (pointer: fine) { .touch-only { display:none; } }
     </style>
 </head>
 <body>

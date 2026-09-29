@@ -1,0 +1,83 @@
+/* Panneaux imprimés : rendu des pages, étiquettes et blocs. Partagé par le panneau d'administration (éditeur,
+   aperçu en direct des réglages) et la page d'impression autonome, qui le charge directement via @vite. */
+.pnl { -webkit-print-color-adjust: exact; print-color-adjust: exact; color: #222; font-family: 'Verdana', Arial, sans-serif; line-height: 1.2; }
+.pnl-pages { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.pnl-page { box-sizing: border-box; position: relative; background: #fff; border: 1px solid #dedede; box-shadow: 0 2px 14px rgba(0,0,0,.2); overflow: hidden; }
+.portrait .pnl-page { width: 210mm; height: 297.15mm; }
+.paysage .pnl-page { width: 297mm; height: 209.8mm; }
+.pnl-margin { position: absolute; inset: 12px; display: flex; flex-direction: column; gap: 6px; }
+.pnl-cols { flex: 1 1 auto; min-height: 0; display: flex; gap: 6px; }
+.pnl-col { flex: 1 1 0; min-width: 0; overflow: hidden; }
+.pnl-col > * { margin-bottom: 6px; }
+.pnl-blocks { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; }
+.pnl-block { position: relative; min-width: 0; }
+.pnl-title { text-align: center; font-weight: 800; line-height: 1.05; }
+.pnl-none { padding: 2rem; text-align: center; color: #777; background: #fff; border: 1px dashed #ccc; border-radius: .6rem; }
+.pnl-pool { display: none; }
+
+/* étiquettes de bonbons */
+.etq { position: relative; font-size: initial; line-height: initial; }
+.etq_bb { border: 1px solid #efefef; background: #fff; }
+.etq_bb_entete { background: #efefef; text-align: left; }
+div.etq_bb_entete { padding: 3px; }
+table.etq_bb_entete { width: 100%; border-collapse: collapse; }
+.etq_bb_entete td:first-child { padding: 3px; width: 100%; }
+.etq_bb_entete td:last-child { padding-right: 3px; vertical-align: middle; }
+.etq_bb_logo { display: inline-block; background: #fff; border-radius: 999px; padding: 3px 8px; line-height: 0; }
+.etq_bb_logo img { max-height: 40px; max-width: 50px; vertical-align: middle; }
+.etq_bb_corp { padding: 3px; text-align: justify; background: #fff; }
+.etq_bb_corp span.label { font-weight: bold; }
+.etq_bb_pied { border-top: 1px solid #ddd; padding: 2px 3px; text-align: right; font-weight: bold; }
+
+/* allergènes surlignés dans les ingrédients (voir Modules\Allergenes\Support\AllergenTerms::highlight) :
+   .pb-a-contains = allergène présent, .pb-a-trace = mention « peut contenir des traces de… »,
+   .pb-a-free = mention « sans gluten ». Fond coloré ou texte coloré selon le réglage du panneau. */
+mark.pb-a { background: none; padding: 0; }
+.pnl-allergene-background .pb-a-contains { background: red; color: #fff; }
+.pnl-allergene-background .pb-a-trace { background: #f59e0b; color: #fff; }
+.pnl-allergene-background .pb-a-free { background: green; color: #fff; }
+.pnl-allergene-color .pb-a-contains { color: red; font-weight: bold; }
+.pnl-allergene-color .pb-a-trace { color: #b45309; font-weight: bold; }
+.pnl-allergene-color .pb-a-free { color: green; font-weight: bold; }
+.pb-mention { font-style: italic; }
+
+/* entête d'un bloc d'étiquettes (marque…) */
+.pnl-block-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; background: #3b2f2f; color: #fff; padding: 3px 6px; font: 700 12px Verdana, sans-serif; text-transform: uppercase; border-radius: 2px; }
+.pnl-block-head img { height: 22px; max-width: 70px; object-fit: contain; background: #fff; border-radius: 3px; padding: 1px 3px; }
+
+/* blocs d'information */
+.etq-info .title { padding: 4px; text-align: left; font-weight: bold; }
+.etq-info .corp { padding: 3px; text-align: justify; font-weight: normal; }
+.etq-info .corp hr { border: 0; border-top: 1px solid currentColor; opacity: .4; margin: 4px 0; }
+.etq-info .corp p { margin: 3px 0; }
+.etq-info-marque .corp { padding: 4px 0; text-align: center; }
+.etq-info-marque-tile { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 84px; height: 62px; margin: 1px; text-align: center; font-weight: bold; vertical-align: middle; }
+.etq-info-marque-tile img { max-height: 36px; max-width: 78px; }
+.etq-info-marque-tile b { font-size: 12px; }
+.etq-info-legende { display: inline-block; position: relative; padding: 0 12px 0 40px; line-height: 20px; }
+.etq-info-legende i { position: absolute; left: 4px; top: 0; width: 32px; height: 20px; border: 1px solid rgba(0,0,0,.25); }
+
+/* page récapitulative des DLUO */
+.pnl-recap { color: #444; font: 12px Arial, sans-serif; text-align: left; }
+.pnl-recap h1 { font-size: 15px; font-weight: bold; margin: 0 0 10px; }
+.pnl-recap b { display: block; margin: 10px 0 2px; }
+
+/* barres d'outils au survol (aperçu d'administration uniquement) */
+.pnl-overlay { position: absolute; inset: 0; z-index: 4; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.5); }
+.pnl-block:hover > .pnl-overlay, .pnl-lab:hover > .pnl-overlay { display: flex; }
+.pnl-lab { position: relative; }
+.pnl-tools { display: flex; flex-wrap: wrap; gap: 3px; align-items: center; justify-content: center; padding: 4px; }
+.pnl-tools button, .pnl-tools a { background: #fff; border: 1px solid #bbb; border-radius: 4px; padding: 3px 7px; font: 12px Arial, sans-serif; color: #222; cursor: pointer; text-decoration: none; }
+.pnl-tools button:disabled { opacity: .45; cursor: default; }
+.pnl-tools .w { color: #fff; font: 700 13px Arial, sans-serif; min-width: 16px; text-align: center; }
+.pnl-zoom { position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.pnl-zoom > div { zoom: 2; background: #fff; max-width: 45vw; max-height: 80vh; overflow: auto; }
+.pnl-zoom > div.wide { max-width: 70vw; }
+
+@media print {
+    .pnl-overlay { display: none !important; }
+    .pnl-none { display: none !important; }
+    .pnl-pages { display: block; gap: 0; }
+    .pnl-page { box-shadow: none; border: 0; margin: 0; break-after: page; page-break-after: always; }
+    .pnl-page:last-child { break-after: auto; page-break-after: auto; }
+}

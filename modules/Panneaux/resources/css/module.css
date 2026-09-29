@@ -1,0 +1,4 @@
+/* Point d'entrée CSS du module, chargé sur la création / l'édition d'un panneau (voir PanneauxPlugin) et par la
+   page d'impression autonome (print.blade.php). */
+@import './partials/board.css';
+@import './partials/panneaux.css';

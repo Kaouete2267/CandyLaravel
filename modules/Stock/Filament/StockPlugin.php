@@ -6,6 +6,7 @@ use Filament\Contracts\Plugin;
 use Filament\Panel;
 use Modules\Stock\Filament\Pages\StockGrid;
 use Modules\Stock\Filament\Resources\StockMovementResource;
+use Modules\Support\ModuleStyles;
 
 class StockPlugin implements Plugin
 {
@@ -24,6 +25,8 @@ class StockPlugin implements Plugin
         $panel
             ->pages([StockGrid::class])
             ->resources([StockMovementResource::class]);
+
+        ModuleStyles::register($panel, 'Stock', pages: [StockGrid::class]);
     }
 
     public function boot(Panel $panel): void {}
