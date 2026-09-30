@@ -6,13 +6,16 @@ use Closure;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Lunar\Admin\Filament\Pages\Dashboard;
+use Lunar\Admin\Filament\Resources\ProductResource;
 use Lunar\Admin\Filament\Resources\TaxClassResource;
 use Lunar\Admin\Filament\Resources\TaxRateResource;
 use Lunar\Admin\Filament\Resources\TaxZoneResource;
+use Lunar\Admin\Support\Facades\LunarPanel;
 use Lunar\Models\TaxClass;
 use Lunar\Models\TaxRate;
 use Lunar\Models\TaxZone;
 use Modules\Admin\Filament\AdminPlugin;
+use Modules\Admin\Filament\Extensions\ProductTableSortingExtension;
 use Modules\Admin\Policies\TaxPolicy;
 
 /**
@@ -40,6 +43,10 @@ class AdminServiceProvider extends ServiceProvider
         foreach ([TaxClass::class, TaxZone::class, TaxRate::class] as $taxModel) {
             Gate::policy($taxModel, TaxPolicy::class);
         }
+
+        LunarPanel::extensions([
+            ProductResource::class => ProductTableSortingExtension::class,
+        ]);
     }
 
     /**
