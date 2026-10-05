@@ -15,9 +15,10 @@ class GeminiClient
      *
      * @param  array<string, mixed>  $schema  schéma de réponse Gemini (types en majuscules)
      * @param  array<int, array{mime: string, data: string}>  $images  voir ImagePayload
+     * @param  ?string  $systemInstruction  rôle et règles absolues, envoyés à part du prompt (`systemInstruction`)
      * @return array<string, mixed>
      */
-    public function generateJson(string $prompt, array $schema, array $images = [], float $temperature = 0.2): array
+    public function generateJson(string $prompt, array $schema, array $images = [], float $temperature = 0.2, ?string $systemInstruction = null): array
     {
         // La clé/le modèle réglés depuis le backoffice (Réglages IA) prennent le pas sur le .env,
         // qui reste un repli utile (déploiement sans base, ou avant la première visite de la page).
@@ -41,14 +42,15 @@ class GeminiClient
                 ->timeout(config('bonbon.gemini.timeout'))
                 ->retry(2, 1500, fn ($e) => $e instanceof ConnectionException
                     || ($e instanceof RequestException && in_array($e->response->status(), [500, 503])), throw: false)
-                ->post($url, [
+                ->post($url, array_filter([
+                    'systemInstruction' => $systemInstruction !== null ? ['parts' => [['text' => $systemInstruction]]] : null,
                     'contents' => [['role' => 'user', 'parts' => $parts]],
                     'generationConfig' => [
                         'temperature' => $temperature,
                         'responseMimeType' => 'application/json',
                         'responseSchema' => $schema,
                     ],
-                ]);
+                ]));
         } catch (ConnectionException $e) {
             Log::warning('Gemini injoignable', ['error' => $e->getMessage()]);
             throw new GeminiException("Le service d'IA est injoignable. Réessayez dans un instant.");

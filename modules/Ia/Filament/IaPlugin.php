@@ -7,7 +7,6 @@ use Filament\Panel;
 use Lunar\Admin\Filament\Resources\ProductResource\Pages\EditProduct;
 use Modules\Ia\Filament\Pages\CreateProductWithAi;
 use Modules\Ia\Filament\Pages\IaSettings;
-use Modules\Ia\Filament\Resources\IngredientTermResource;
 use Modules\Support\ModuleStyles;
 
 class IaPlugin implements Plugin
@@ -25,7 +24,6 @@ class IaPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $panel->pages([CreateProductWithAi::class, IaSettings::class]);
-        $panel->resources([IngredientTermResource::class]);
 
         ModuleStyles::register($panel, 'Ia', pages: [EditProduct::class]);
     }

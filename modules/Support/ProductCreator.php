@@ -26,6 +26,8 @@ class ProductCreator
      *     name: array<string,string>,
      *     description?: array<string,string>,
      *     ingredients?: array<string,string>,
+     *     ingredients_scan?: ?string,
+     *     allergens_scan?: ?string,
      *     brand?: ?string,
      *     sku?: ?string,
      *     ean?: ?string,
@@ -49,6 +51,13 @@ class ProductCreator
             foreach (['description', 'ingredients'] as $handle) {
                 if (! empty(array_filter($data[$handle] ?? []))) {
                     $attributes->put($handle, self::translated($data[$handle]));
+                }
+            }
+
+            // Textes lus tels quels sur l'emballage (création assistée par IA), non traduits.
+            foreach (['ingredients_scan', 'allergens_scan'] as $handle) {
+                if (filled($data[$handle] ?? null)) {
+                    $attributes->put($handle, new Text($data[$handle]));
                 }
             }
 

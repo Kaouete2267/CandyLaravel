@@ -6,8 +6,8 @@ use Database\Seeders\BonbonBaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Lunar\Admin\Filament\Resources\ProductResource;
 use Lunar\Admin\Models\Staff;
-use Modules\Ia\Filament\Resources\IngredientTermResource;
 use Modules\Support\ProductCreator;
+use Modules\Types\Filament\Resources\CandyTypeResource;
 use Tests\TestCase;
 
 /**
@@ -28,7 +28,7 @@ class AdminPanelLayoutTest extends TestCase
     {
         $staff = Staff::factory()->create(['admin' => true]);
 
-        $response = $this->actingAs($staff, 'staff')->get(IngredientTermResource::getUrl('index'));
+        $response = $this->actingAs($staff, 'staff')->get(CandyTypeResource::getUrl('index'));
 
         $response->assertOk();
         $response->assertSee('class="fi-header', false);
@@ -74,7 +74,7 @@ class AdminPanelLayoutTest extends TestCase
     {
         $staff = Staff::factory()->create(['admin' => true]);
 
-        $response = $this->actingAs($staff, 'staff')->get(IngredientTermResource::getUrl('index'));
+        $response = $this->actingAs($staff, 'staff')->get(CandyTypeResource::getUrl('index'));
 
         $response->assertOk();
         $response->assertDontSee('fi-header-actions-dropdown', false);

@@ -155,6 +155,15 @@ class CreateProductWithAi extends Page implements HasSchemas
                             ->visible(fn () => Modules::enabled('Stock')),
                     ]),
 
+                Section::make('Textes lus sur l\'emballage (scan)')
+                    ->description('Recopiés tels quels par l\'IA depuis les photos : ils permettent de vérifier les ingrédients et les allergènes proposés. Enregistrés avec la fiche.')
+                    ->collapsible()
+                    ->columns(2)
+                    ->schema([
+                        Textarea::make('ingredients_scan')->label('Ingrédients bruts (scan)')->rows(4),
+                        Textarea::make('allergens_scan')->label('Mentions allergènes (scan)')->rows(4),
+                    ]),
+
                 Section::make('Allergènes')
                     ->visible(fn () => Modules::enabled('Allergenes'))
                     ->collapsible()
@@ -229,6 +238,8 @@ class CreateProductWithAi extends Page implements HasSchemas
             'name' => $draft['name'] ?? [],
             'description' => $draft['description'] ?? [],
             'ingredients' => $draft['ingredients'] ?? [],
+            'ingredients_scan' => $draft['ingredients_scan'] ?? null,
+            'allergens_scan' => $draft['allergens_scan'] ?? null,
             'bag_weight_kg' => $draft['bag_weight_kg'] ?? null,
             'ean' => $draft['barcode'] ?? null,
             'bags_per_carton' => 1,
@@ -255,6 +266,8 @@ class CreateProductWithAi extends Page implements HasSchemas
             'name' => $data['name'],
             'description' => $data['description'] ?? [],
             'ingredients' => $data['ingredients'] ?? [],
+            'ingredients_scan' => $data['ingredients_scan'] ?? null,
+            'allergens_scan' => $data['allergens_scan'] ?? null,
             'brand' => $data['brand'] ?? null,
             'sku' => $data['sku'] ?? null,
             'ean' => $data['ean'] ?? null,

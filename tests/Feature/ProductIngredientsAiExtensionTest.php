@@ -11,6 +11,7 @@ use Livewire\Livewire;
 use Lunar\Admin\Filament\Resources\ProductResource\Pages\EditProduct;
 use Lunar\Admin\Models\Staff;
 use Modules\Allergenes\Models\Allergen;
+use Modules\Ia\Services\IngredientsAiWriter;
 use Modules\Support\ProductCreator;
 use Tests\TestCase;
 
@@ -23,13 +24,21 @@ class ProductIngredientsAiExtensionTest extends TestCase
         return tap(Staff::factory()->create(['admin' => true]), fn () => config(['bonbon.gemini.key' => 'test-key']));
     }
 
-    /** @param  array<int, array{category?: ?string, fr: string, nl: string, en: string}>  $items */
-    private function fakeRewrite(array $items, ?string $notes = null): void
+    /**
+     * Simule la réponse de {@see IngredientsAiWriter} : chaque langue reçoit ses ingrédients joints par une virgule.
+     *
+     * @param  array<int, array{fr: string, nl: string, en: string}>  $items
+     * @param  array<int, array{type: string, source: string, detail: string}>  $notes
+     */
+    private function fakeRewrite(array $items, array $notes = [], ?string $sourceFr = null): void
     {
-        $items = array_map(fn (array $item) => ['category' => null, ...$item], $items);
+        $ingredients = [];
+        foreach (['fr', 'nl', 'en'] as $locale) {
+            $ingredients[$locale] = implode(', ', array_column($items, $locale));
+        }
 
         Http::fake(['generativelanguage.googleapis.com/*' => Http::response(['candidates' => [
-            ['content' => ['parts' => [['text' => json_encode(['items' => $items, 'notes' => $notes])]]]],
+            ['content' => ['parts' => [['text' => json_encode(array_filter(['sourceFr' => $sourceFr, 'ingredients' => $ingredients, 'notes' => $notes], fn ($value) => $value !== null))]]]],
         ]])]);
     }
 
@@ -44,14 +53,19 @@ class ProductIngredientsAiExtensionTest extends TestCase
         ]);
 
         Http::fake(['generativelanguage.googleapis.com/*' => Http::sequence()
-            ->push(['candidates' => [['content' => ['parts' => [['text' => json_encode(['raw' => 'zucker, gelatine, aroma erdbeere', 'notes' => null])]]]]]])
             ->push(['candidates' => [['content' => ['parts' => [['text' => json_encode([
-                'items' => [
-                    ['category' => null, 'fr' => 'sucre', 'nl' => 'suiker', 'en' => 'sugar'],
-                    ['category' => null, 'fr' => 'gélatine', 'nl' => 'gelatine', 'en' => 'gelatin'],
-                    ['category' => 'aromes', 'fr' => 'fraise', 'nl' => 'aardbei', 'en' => 'strawberry'],
-                ],
+                'raw' => 'zucker, gelatine, aroma erdbeere',
+                'allergen_mention' => 'Kann Milch und Haselnüsse enthalten.',
+                'highlighted_allergens' => ['Milch', 'Haselnüsse'],
                 'notes' => null,
+            ])]]]]]])
+            ->push(['candidates' => [['content' => ['parts' => [['text' => json_encode([
+                'ingredients' => [
+                    'fr' => 'sucre, gélatine, arôme fraise',
+                    'nl' => 'suiker, gelatine, aroma aardbei',
+                    'en' => 'sugar, gelatin, flavour strawberry',
+                ],
+                'notes' => [],
             ])]]]]]]),
         ]);
 
@@ -65,7 +79,9 @@ class ProductIngredientsAiExtensionTest extends TestCase
             ->assertFormSet([
                 'ia_before_fr' => 'ancien texte',
                 'attribute_data.ingredients_scan' => 'zucker, gelatine, aroma erdbeere',
-                // A single aroma renders in its singular form ("arôme fraise"), no group parentheses.
+                // The trace mention read on the photo is kept verbatim, with the words printed in bold listed
+                // apart, so a human can justify every "may contain" box.
+                'attribute_data.allergens_scan' => "Kann Milch und Haselnüsse enthalten.\nMis en évidence sur l'emballage : Milch, Haselnüsse",
                 'attribute_data.ingredients.fr' => 'sucre, gélatine, arôme fraise',
                 'attribute_data.ingredients.nl' => 'suiker, gelatine, aroma aardbei',
                 'attribute_data.ingredients.en' => 'sugar, gelatin, flavour strawberry',
@@ -78,6 +94,7 @@ class ProductIngredientsAiExtensionTest extends TestCase
             ->assertActionDataSet([
                 'raw' => 'zucker, gelatine, aroma erdbeere',
                 'after_fr' => 'sucre, gélatine, arôme fraise',
+                'allergens_raw' => "Kann Milch und Haselnüsse enthalten.\nMis en évidence sur l'emballage : Milch, Haselnüsse",
             ]);
 
         // The modal is organized as an input → AI suggestion → user-validated pipeline, each section clearly
@@ -159,10 +176,13 @@ class ProductIngredientsAiExtensionTest extends TestCase
         // The AI's phrasing isn't quite right: the user tweaks it by hand before validating, no AI call needed.
         $livewire->callAction(
             TestAction::make('reviewIngredientsDiff')->schemaComponent('ingredientsAiActions'),
-            data: ['after_fr' => 'sucre, gélatine (origine porcine)'],
+            data: ['after_fr' => 'sucre, gélatine (origine porcine)', 'allergens_raw' => 'Peut contenir du lait.'],
         )
             ->assertHasNoFormErrors(form: 'form')
-            ->assertFormSet(['attribute_data.ingredients.fr' => 'sucre, gélatine (origine porcine)']);
+            ->assertFormSet([
+                'attribute_data.ingredients.fr' => 'sucre, gélatine (origine porcine)',
+                'attribute_data.allergens_scan' => 'Peut contenir du lait.',
+            ]);
 
         Http::assertNothingSent();
     }
@@ -260,7 +280,10 @@ class ProductIngredientsAiExtensionTest extends TestCase
         $this->seed(BonbonBaseSeeder::class);
         $staff = $this->actingAsAdmin();
 
-        $product = ProductCreator::create(['name' => ['fr' => 'Fraises Tagada']]);
+        $product = ProductCreator::create([
+            'name' => ['fr' => 'Fraises Tagada'],
+            'allergens_scan' => 'Peut contenir du lait.',
+        ]);
 
         $this->fakeRewrite([
             ['fr' => 'sucre', 'nl' => 'suiker', 'en' => 'sugar'],
@@ -272,17 +295,41 @@ class ProductIngredientsAiExtensionTest extends TestCase
 
         // Rendered once, by the AI section only — not a second time among Lunar's own attribute fields.
         $this->assertSame(1, substr_count($livewire->html(), 'Ingrédients bruts (scan)'));
+        $this->assertSame(1, substr_count($livewire->html(), 'Mentions allergènes (scan)'));
 
+        // Pasted text only: nothing was read from the packaging, so the previous allergen scan is kept.
         $livewire
             ->callAction(
                 TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'),
                 data: ['raw' => 'Zucker,  Gelatine (Rind)'],
             )
-            ->assertFormSet(['attribute_data.ingredients_scan' => 'Zucker,  Gelatine (Rind)'])
+            ->assertFormSet([
+                'attribute_data.ingredients_scan' => 'Zucker,  Gelatine (Rind)',
+                'attribute_data.allergens_scan' => 'Peut contenir du lait.',
+            ])
             ->call('save')
             ->assertHasNoFormErrors(form: 'form');
 
         $this->assertSame('Zucker,  Gelatine (Rind)', $product->fresh()->translateAttribute('ingredients_scan'));
+        $this->assertSame('Peut contenir du lait.', $product->fresh()->translateAttribute('allergens_scan'));
+    }
+
+    public function test_allergen_statements_can_be_typed_in_the_update_modal_without_a_photo(): void
+    {
+        $this->seed(BonbonBaseSeeder::class);
+        $staff = $this->actingAsAdmin();
+
+        $product = ProductCreator::create(['name' => ['fr' => 'Fraises Tagada']]);
+
+        $this->fakeRewrite([['fr' => 'sucre', 'nl' => 'suiker', 'en' => 'sugar']]);
+
+        Livewire::actingAs($staff, 'staff')
+            ->test(EditProduct::class, ['record' => $product->getKey()])
+            ->mountAction(TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'))
+            ->assertMountedActionModalSee('Mentions allergènes (si pas de photo, ou à corriger)')
+            ->fillForm(['raw' => 'Sucre', 'allergens_raw' => 'Peut contenir des traces de soja.'])
+            ->callMountedAction()
+            ->assertFormSet(['attribute_data.allergens_scan' => 'Peut contenir des traces de soja.']);
     }
 
     public function test_the_shortcut_next_to_the_ingredients_field_opens_the_ai_update_modal(): void
@@ -298,6 +345,70 @@ class ProductIngredientsAiExtensionTest extends TestCase
             ->assertActionMounted(TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'));
     }
 
+    public function test_debug_mode_shows_the_prompt_and_the_raw_ai_response_in_the_results_modal(): void
+    {
+        $this->seed(BonbonBaseSeeder::class);
+        $staff = $this->actingAsAdmin();
+
+        $product = ProductCreator::create(['name' => ['fr' => 'Fraises Tagada']]);
+
+        $this->fakeRewrite([['fr' => 'sucre', 'nl' => 'suiker', 'en' => 'sugar']]);
+
+        $livewire = Livewire::actingAs($staff, 'staff')
+            ->test(EditProduct::class, ['record' => $product->getKey()])
+            ->callAction(
+                TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'),
+                data: ['raw' => 'Sucre', 'debug' => true],
+            );
+
+        $livewire->assertMountedActionModalSee('Prompt envoyé')
+            ->assertMountedActionModalSee('« Sucre »')
+            ->assertMountedActionModalSee('"suiker"');
+    }
+
+    public function test_ai_notes_are_shown_escaped_in_the_suggestions_section(): void
+    {
+        $this->seed(BonbonBaseSeeder::class);
+        $staff = $this->actingAsAdmin();
+
+        $product = ProductCreator::create(['name' => ['fr' => 'Fraises Tagada']]);
+
+        $this->fakeRewrite(
+            [['fr' => 'sucre, colorant : E133', 'nl' => 'suiker, kleurstof: E133', 'en' => 'sugar, colour: E133']],
+            notes: [['type' => 'Remplacé par un code E', 'source' => 'Brillantblau', 'detail' => 'Bleu brillant remplacé par E133<script>alert(2)</script>']],
+        );
+
+        $livewire = Livewire::actingAs($staff, 'staff')
+            ->test(EditProduct::class, ['record' => $product->getKey()])
+            ->callAction(
+                TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'),
+                data: ['raw' => 'Zucker, Brillantblau'],
+            )
+            ->assertFormSet(['ia_message' => null]);
+
+        $livewire->assertMountedActionModalSee('<strong>Remplacé par un code E</strong>', escape: false)
+            ->assertMountedActionModalSee('Bleu brillant remplacé par E133')
+            ->assertMountedActionModalDontSee('<script>alert(2)', escape: false);
+    }
+
+    public function test_debug_output_is_hidden_when_debug_mode_is_unchecked(): void
+    {
+        $this->seed(BonbonBaseSeeder::class);
+        $staff = $this->actingAsAdmin();
+
+        $product = ProductCreator::create(['name' => ['fr' => 'Fraises Tagada']]);
+
+        $this->fakeRewrite([['fr' => 'sucre', 'nl' => 'suiker', 'en' => 'sugar']]);
+
+        Livewire::actingAs($staff, 'staff')
+            ->test(EditProduct::class, ['record' => $product->getKey()])
+            ->callAction(
+                TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'),
+                data: ['raw' => 'Sucre'],
+            )
+            ->assertMountedActionModalDontSee('Prompt envoyé');
+    }
+
     public function test_comparison_modal_is_hidden_until_something_has_been_scanned(): void
     {
         $this->seed(BonbonBaseSeeder::class);
@@ -310,5 +421,72 @@ class ProductIngredientsAiExtensionTest extends TestCase
             ->test(EditProduct::class, ['record' => $product->getKey()])
             ->fillForm(['attribute_data.ingredients_scan' => 'sucre, gelatine'])
             ->assertDontSee('Comparer avant / après');
+    }
+
+    public function test_the_user_picks_the_starting_text_when_the_last_scan_and_the_product_list_differ(): void
+    {
+        $this->seed(BonbonBaseSeeder::class);
+        $staff = $this->actingAsAdmin();
+
+        $product = ProductCreator::create([
+            'name' => ['fr' => 'Fraises Tagada'],
+            'ingredients' => ['fr' => 'sucre, acides (citrique, malique)'],
+        ]);
+
+        $livewire = Livewire::actingAs($staff, 'staff')
+            ->test(EditProduct::class, ['record' => $product->getKey()])
+            ->fillForm(['attribute_data.ingredients_scan' => 'sucre, régulateur d\'acidité E330, E296'])
+            ->mountAction(TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'))
+            ->assertMountedActionModalSee('Texte de départ')
+            // Neither text is picked for the user: running without choosing fails instead of guessing.
+            ->assertActionDataSet(['source' => null, 'raw' => '']);
+
+        $livewire->fillForm(['source' => 'scan'])
+            ->assertActionDataSet(['raw' => 'sucre, régulateur d\'acidité E330, E296'])
+            ->fillForm(['source' => 'product'])
+            ->assertActionDataSet(['raw' => 'sucre, acides (citrique, malique)']);
+    }
+
+    public function test_the_starting_text_is_not_asked_when_the_scan_matches_the_product_list(): void
+    {
+        $this->seed(BonbonBaseSeeder::class);
+        $staff = $this->actingAsAdmin();
+
+        $product = ProductCreator::create([
+            'name' => ['fr' => 'Fraises Tagada'],
+            'ingredients' => ['fr' => 'sucre, gélatine'],
+        ]);
+
+        Livewire::actingAs($staff, 'staff')
+            ->test(EditProduct::class, ['record' => $product->getKey()])
+            ->fillForm(['attribute_data.ingredients_scan' => 'sucre, gélatine'])
+            ->mountAction(TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'))
+            ->assertMountedActionModalDontSee('Texte de départ')
+            ->assertActionDataSet(['raw' => 'sucre, gélatine']);
+    }
+
+    public function test_the_french_suggestion_is_compared_with_the_translated_source_not_the_old_product_text(): void
+    {
+        $this->seed(BonbonBaseSeeder::class);
+        $staff = $this->actingAsAdmin();
+
+        $product = ProductCreator::create([
+            'name' => ['fr' => 'Fraises Tagada'],
+            'ingredients' => ['fr' => 'ancienne liste de la fiche'],
+        ]);
+
+        $this->fakeRewrite(
+            [['fr' => 'sucre, régulateur d\'acidité (acide citrique)', 'nl' => 'suiker', 'en' => 'sugar']],
+            sourceFr: 'sucre, régulateur d\'acidité E330',
+        );
+
+        Livewire::actingAs($staff, 'staff')
+            ->test(EditProduct::class, ['record' => $product->getKey()])
+            ->callAction(
+                TestAction::make('updateIngredientsWithAi')->schemaComponent('ingredientsAiActions'),
+                data: ['raw' => 'Zucker, Säureregulator E330'],
+            )
+            ->assertMountedActionModalSee('E330')
+            ->assertMountedActionModalDontSee('ancienne liste de la fiche');
     }
 }

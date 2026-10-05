@@ -23,10 +23,11 @@ use Modules\Ia\Filament\FieldTypes\TranslatedTextWithIngredientsAi;
  * surlignés). Les champs cachés ci-dessous ne sont que la mémoire de travail entre les deux : rien n'est
  * affiché directement dans le formulaire, tout se voit dans la modale de comparaison.
  *
- * Le texte brut réellement passé à l'IA va dans l'attribut Lunar `ingredients_scan`, enregistré avec la fiche.
- * Cet attribut n'est volontairement pas rattaché au type de produit (voir BonbonBaseSeeder) : Lunar ne
- * l'affiche donc pas avec les autres, c'est cette section qui le rend en textarea — d'où la conversion
- * manuelle vers/depuis {@see Text}, que Lunar ne fait que pour les attributs qu'il affiche lui-même.
+ * Le texte brut réellement passé à l'IA va dans l'attribut Lunar `ingredients_scan`, et les mentions
+ * d'allergènes lues sur la photo dans `allergens_scan`, tous deux enregistrés avec la fiche. Ces attributs ne
+ * sont volontairement pas rattachés au type de produit (voir BonbonBaseSeeder) : Lunar ne les affiche donc
+ * pas avec les autres, c'est cette section qui les rend en textarea — d'où la conversion manuelle vers/depuis
+ * {@see Text}, que Lunar ne fait que pour les attributs qu'il affiche lui-même.
  *
  * La copie du bouton « Mettre à jour avec l'IA » à côté du champ « Ingrédients » est ajoutée ailleurs, par
  * {@see TranslatedTextWithIngredientsAi} : les champs d'attributs Lunar ne se modifient pas depuis ici.
@@ -74,11 +75,24 @@ class ProductIngredientsAiExtension extends EditPageExtension
                         ->formatStateUsing(fn ($state) => $state instanceof FieldType ? $state->getValue() : $state)
                         ->dehydrateStateUsing(fn (?string $state) => new Text($state ?? '')),
 
+                    Textarea::make('attribute_data.allergens_scan')
+                        ->label('Mentions allergènes (scan)')
+                        ->helperText('Mention de traces (« Peut contenir… ») et allergènes mis en évidence sur l\'emballage (gras…), lus tels quels sur la dernière photo : ce qui justifie les allergènes cochés. Il n\'est affiché nulle part ailleurs.')
+                        ->rows(3)
+                        ->formatStateUsing(fn ($state) => $state instanceof FieldType ? $state->getValue() : $state)
+                        ->dehydrateStateUsing(fn (?string $state) => new Text($state ?? '')),
+
                     Hidden::make('ia_has_run')->dehydrated(false),
                     Hidden::make('ia_pending_raw')->dehydrated(false),
+                    Hidden::make('ia_source_fr')->dehydrated(false),
+                    Hidden::make('ia_pending_allergens')->dehydrated(false),
                     Hidden::make('ia_allergens_added')->dehydrated(false),
                     Hidden::make('ia_message')->dehydrated(false),
                     Hidden::make('ia_message_type')->dehydrated(false),
+                    Hidden::make('ia_notes')->dehydrated(false),
+                    Hidden::make('ia_debug')->dehydrated(false),
+                    Hidden::make('ia_debug_prompt')->dehydrated(false),
+                    Hidden::make('ia_debug_response')->dehydrated(false),
                     ...collect($locales)->map(fn (string $locale) => Hidden::make("ia_before_{$locale}")->dehydrated(false))->all(),
                 ]),
         ]);

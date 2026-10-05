@@ -9,7 +9,6 @@ use Lunar\Admin\Models\Staff;
 use Modules\Allergenes\Filament\Resources\AllergenResource;
 use Modules\Ia\Filament\Pages\CreateProductWithAi;
 use Modules\Ia\Filament\Pages\IaSettings;
-use Modules\Ia\Filament\Resources\IngredientTermResource;
 use Modules\Invitations\Filament\Resources\InvitationResource;
 use Modules\Panneaux\Filament\Resources\PanelResource;
 use Modules\Stock\Filament\Pages\StockGrid;
@@ -43,9 +42,9 @@ class AdminAccessControlTest extends TestCase
 
     public function test_the_dashboard_redirects_staff_without_permission_to_their_first_accessible_page(): void
     {
-        $this->actingAs($this->staffWith(['confiserie', 'confiserie:manage-ingredient-terms']), 'staff')
+        $this->actingAs($this->staffWith(['confiserie', 'confiserie:manage-candy-types']), 'staff')
             ->get(Dashboard::getUrl())
-            ->assertRedirect(IngredientTermResource::getUrl('index'));
+            ->assertRedirect(CandyTypeResource::getUrl('index'));
     }
 
     public function test_the_dashboard_forbids_staff_who_can_access_no_page_at_all(): void
@@ -117,7 +116,6 @@ class AdminAccessControlTest extends TestCase
             'stock' => [StockGrid::class, 'confiserie:manage-stock'],
             'historique du stock' => [StockMovementResource::class, 'confiserie:view-stock-history'],
             'allergènes' => [AllergenResource::class, 'confiserie:manage-allergens'],
-            'glossaire d\'ingrédients' => [IngredientTermResource::class, 'confiserie:manage-ingredient-terms'],
             'invitations' => [InvitationResource::class, 'confiserie:manage-invitations'],
         ];
     }

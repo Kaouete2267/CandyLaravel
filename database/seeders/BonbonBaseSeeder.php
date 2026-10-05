@@ -101,6 +101,8 @@ class BonbonBaseSeeder extends Seeder
             // Liste brute passée à l'IA (OCR de la photo ou texte corrigé à la main), gardée telle quelle au cas où.
             // Non rattachée au type de produit plus bas : c'est la section IA de la fiche qui l'affiche.
             ['product', $group, 'ingredients_scan', ['fr' => 'Ingrédients bruts (scan)', 'nl' => 'Ruwe ingrediënten (scan)', 'en' => 'Raw ingredients (scan)'], Text::class, ['richtext' => false], false, false],
+            // Mentions d'allergènes lues sur l'emballage (traces, mots en gras…), pour justifier les allergènes cochés.
+            ['product', $group, 'allergens_scan', ['fr' => 'Mentions allergènes (scan)', 'nl' => 'Allergenenvermeldingen (scan)', 'en' => 'Allergen statements (scan)'], Text::class, ['richtext' => false], false, false],
             ['product', $group, 'bags_per_carton', ['fr' => 'Sacs par carton', 'nl' => 'Zakken per doos', 'en' => 'Bags per carton'], Number::class, ['min' => 1], false, false],
             ['product', $group, 'min_stock_bags', ['fr' => 'Seuil d\'alerte (sacs)', 'nl' => 'Alarmdrempel (zakken)', 'en' => 'Alert threshold (bags)'], Number::class, ['min' => 0], false, false],
             ['collection', $collectionGroup, 'name', ['fr' => 'Nom', 'nl' => 'Naam', 'en' => 'Name'], TranslatedText::class, ['richtext' => false], true, true],
@@ -127,13 +129,15 @@ class BonbonBaseSeeder extends Seeder
             );
         }
 
-        // « ingredients_scan » reste hors du type : il est affiché par la section IA, pas par Lunar.
-        $scanAttributeId = Attribute::whereAttributeType(Product::morphName())->where('handle', 'ingredients_scan')->value('id');
+        // Les attributs « scan » restent hors du type : ils sont affichés par la section IA, pas par Lunar.
+        $scanAttributeIds = Attribute::whereAttributeType(Product::morphName())
+            ->whereIn('handle', ['ingredients_scan', 'allergens_scan'])
+            ->pluck('id');
 
         $type = ProductType::firstOrCreate(['name' => 'Bonbon']);
         $type->mappedAttributes()->syncWithoutDetaching(
-            Attribute::whereAttributeType(Product::morphName())->whereKeyNot($scanAttributeId)->pluck('id')
+            Attribute::whereAttributeType(Product::morphName())->whereKeyNot($scanAttributeIds)->pluck('id')
         );
-        $type->mappedAttributes()->detach($scanAttributeId);
+        $type->mappedAttributes()->detach($scanAttributeIds);
     }
 }

@@ -15,10 +15,11 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Modules\Allergenes\Enums\AllergenLevel;
 use Modules\Allergenes\Models\Allergen;
 use Modules\Ia\Services\GeminiException;
-use Modules\Ia\Services\IngredientsWriter;
+use Modules\Ia\Services\IngredientsAiWriter;
 use Modules\Ia\Support\AllergenSync;
 use Modules\Ia\Support\TextDiff;
 use Modules\Support\Modules;
@@ -66,20 +67,32 @@ class ReviewIngredientsDiff
                 // Le texte que l'utilisateur vient de soumettre l'emporte sur le dernier texte source connu :
                 // sinon, le remontage qui affiche une erreur de relance (voir `fail()`) effacerait sa saisie.
                 'raw' => $get('ia_pending_raw') ?: $get('attribute_data.ingredients_scan'),
+                'allergens_raw' => $get('attribute_data.allergens_scan'),
                 ...collect($locales)->mapWithKeys(fn (string $locale) => [
                     "after_{$locale}" => $get("attribute_data.ingredients.{$locale}"),
                 ])->all(),
                 ...collect($locales)->mapWithKeys(fn (string $locale) => [
                     "suggestion_diff_{$locale}" => '<div class="text-sm leading-relaxed text-gray-950 dark:text-white">'
-                        .TextDiff::html($get("ia_before_{$locale}"), $get("attribute_data.ingredients.{$locale}"))
+                        .TextDiff::html(self::diffBaseline($get, $locale), $get("attribute_data.ingredients.{$locale}"))
                         .'</div>',
                 ])->all(),
                 'message' => $get('ia_message'),
                 'message_type' => $get('ia_message_type'),
+                // Les notes arrivent en HTML (liste à puces demandée à l'IA) : nettoyées avant affichage, puisque
+                // l'IA peut recopier du texte source arbitraire.
+                'suggestions_notes_html' => (string) view('ia::actions.ai-notes', [
+                    'notes' => filled($get('ia_notes')) ? Str::sanitizeHtml($get('ia_notes')) : null,
+                ]),
                 'suggestions_allergens_html' => (string) view('ia::actions.allergens-summary', self::allergensViewData($get)),
                 'allergens_added_note' => self::allergensAddedNote($get),
                 'allergens_contains' => $get('allergens_contains') ?? [],
                 'allergens_may_contain' => $get('allergens_may_contain') ?? [],
+                'debug_html' => $get('ia_debug') && filled($get('ia_debug_prompt'))
+                    ? (string) view('ia::actions.debug', [
+                        'prompt' => $get('ia_debug_prompt'),
+                        'response' => $get('ia_debug_response'),
+                    ])
+                    : '',
             ])
             ->schema([
                 Html::make(fn (Get $get) => view('ia::actions.inline-message', [
@@ -92,10 +105,14 @@ class ReviewIngredientsDiff
                     ->icon(Heroicon::DocumentText)
                     ->schema([
                         Textarea::make('raw')->label('Texte source')->rows(4),
+                        Textarea::make('allergens_raw')
+                            ->label('Mentions allergènes (scan)')
+                            ->helperText('Lues sur la photo : ce qui justifie les allergènes cochés ci-dessous. Enregistrées sur la fiche en validant.')
+                            ->rows(3),
                     ]),
 
                 Section::make('Suggestions de l\'IA')
-                    ->description('Ce que l\'IA propose pour chaque langue, changements par rapport à l\'ancien texte surlignés.')
+                    ->description('Ce que l\'IA propose pour chaque langue. FR : changements par rapport au texte source (traduit) surlignés ; autres langues : par rapport à l\'ancien texte de la fiche.')
                     ->icon(Heroicon::Sparkles)
                     ->schema([
                         Tabs::make('suggestions')
@@ -103,6 +120,7 @@ class ReviewIngredientsDiff
                                 ->schema([
                                     Html::make(fn (Get $get) => new HtmlString($get("suggestion_diff_{$locale}") ?? '')),
                                 ]))->all()),
+                        Html::make(fn (Get $get) => new HtmlString($get('suggestions_notes_html') ?? '')),
                         Html::make(fn (Get $get) => new HtmlString($get('suggestions_allergens_html') ?? '')),
                     ]),
 
@@ -118,11 +136,15 @@ class ReviewIngredientsDiff
                         ...self::allergensFormSchema(),
                     ]),
 
+                Html::make(fn (Get $get) => new HtmlString($get('debug_html') ?? '')),
+
                 Hidden::make('message')->dehydrated(false),
                 Hidden::make('message_type')->dehydrated(false),
                 ...collect($locales)->map(fn (string $locale) => Hidden::make("suggestion_diff_{$locale}")->dehydrated(false))->all(),
+                Hidden::make('suggestions_notes_html')->dehydrated(false),
                 Hidden::make('suggestions_allergens_html')->dehydrated(false),
                 Hidden::make('allergens_added_note')->dehydrated(false),
+                Hidden::make('debug_html')->dehydrated(false),
             ])
             ->extraModalFooterActions(fn (Action $action): array => [
                 $action->makeModalSubmitAction('relaunch', arguments: ['relaunch' => true])
@@ -140,6 +162,7 @@ class ReviewIngredientsDiff
                 foreach ($locales as $locale) {
                     $set('attribute_data.ingredients.'.$locale, $data["after_{$locale}"] ?? '');
                 }
+                $set('attribute_data.allergens_scan', $data['allergens_raw'] ?? '');
 
                 if (Modules::enabled('Allergenes')) {
                     $set('allergens_contains', $data['allergens_contains'] ?? []);
@@ -148,6 +171,7 @@ class ReviewIngredientsDiff
 
                 $set('ia_message', null);
                 $set('ia_message_type', null);
+                $set('ia_notes', null);
                 $set('ia_pending_raw', null);
             });
     }
@@ -155,6 +179,8 @@ class ReviewIngredientsDiff
     private static function relaunch(array $data, Set $set, Get $get, Action $action): void
     {
         $raw = $data['raw'] ?? null;
+        // Simple texte, sans appel à l'IA : gardé tout de suite, pour survivre au remontage de la modale.
+        $set('attribute_data.allergens_scan', $data['allergens_raw'] ?? '');
 
         if (blank($raw)) {
             self::fail($set, $action, 'Rien à relancer : corrigez le texte source avant de relancer.', raw: $raw);
@@ -163,7 +189,7 @@ class ReviewIngredientsDiff
         }
 
         try {
-            $result = app(IngredientsWriter::class)->rewrite($raw);
+            $result = app(IngredientsAiWriter::class)->rewrite($raw);
         } catch (GeminiException $e) {
             self::fail($set, $action, 'L\'IA n\'a pas pu répondre : '.$e->getMessage(), raw: $raw);
 
@@ -171,6 +197,8 @@ class ReviewIngredientsDiff
         }
 
         $set('ia_pending_raw', null);
+        self::rememberDebug($set, $get, $result['debug']);
+        $set('ia_source_fr', $result['source_fr']);
         $set('attribute_data.ingredients_scan', $raw);
 
         foreach ($result['ingredients'] as $locale => $text) {
@@ -180,8 +208,9 @@ class ReviewIngredientsDiff
         $added = AllergenSync::apply($result['ingredients']['fr'] ?? '', $set, $get);
         $set('ia_allergens_added', $added);
 
-        $set('ia_message_type', $result['notes'] ? 'success' : null);
-        $set('ia_message', $result['notes']);
+        $set('ia_message_type', null);
+        $set('ia_message', null);
+        $set('ia_notes', $result['notes']);
 
         // Remonte la même modale plutôt que de la fermer : son `->fillForm()` relit alors la page extérieure
         // et recalcule le HTML affiché à partir de l'état qu'on vient de mettre à jour, donnant l'effet d'un
@@ -189,6 +218,36 @@ class ReviewIngredientsDiff
         $action->getLivewire()?->mountAction('reviewIngredientsDiff', context: [
             'schemaComponent' => 'form.ingredientsAiActions',
         ]);
+    }
+
+    /**
+     * Le français se compare au texte source traduit par l'IA (`sourceFr`) : comparé à l'ancien texte de la
+     * fiche, le diff montrait comme supprimés des mots absents du source dès que la fiche avait été remplie à
+     * partir d'un autre texte. Faute de source traduite dans les autres langues, elles gardent l'ancien texte.
+     */
+    private static function diffBaseline(Get $get, string $locale): ?string
+    {
+        if ($locale === 'fr' && filled($get('ia_source_fr'))) {
+            return $get('ia_source_fr');
+        }
+
+        return $get("ia_before_{$locale}");
+    }
+
+    /**
+     * Garde sur la page extérieure le prompt et la réponse de l'IA quand le mode debug est coché (voir
+     * {@see UpdateIngredientsWithAi}), pour que `->fillForm()` les affiche ; les efface sinon.
+     *
+     * @param  array{prompt: string, response: array<string, mixed>}  $debug
+     */
+    public static function rememberDebug(Set $set, Get $get, array $debug): void
+    {
+        $enabled = (bool) $get('ia_debug');
+
+        $set('ia_debug_prompt', $enabled ? $debug['prompt'] : null);
+        $set('ia_debug_response', $enabled
+            ? json_encode($debug['response'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            : null);
     }
 
     private static function fail(Set $set, Action $action, string $message, ?string $raw = null): void

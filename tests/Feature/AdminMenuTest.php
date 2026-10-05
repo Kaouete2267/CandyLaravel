@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Lunar\Admin\Models\Staff;
-use Modules\Ia\Filament\Resources\IngredientTermResource;
+use Modules\Types\Filament\Resources\CandyTypeResource;
 use Tests\TestCase;
 
 /**
@@ -19,7 +19,7 @@ class AdminMenuTest extends TestCase
     {
         $staff = Staff::factory()->create(['admin' => true]);
 
-        $response = $this->actingAs($staff, 'staff')->get(IngredientTermResource::getUrl('index'));
+        $response = $this->actingAs($staff, 'staff')->get(CandyTypeResource::getUrl('index'));
 
         $response->assertOk();
 
@@ -28,7 +28,7 @@ class AdminMenuTest extends TestCase
         // Bouton du groupe dans la colonne étroite, relié à son panneau.
         $response->assertSee('aria-controls="'.$groupKey.'"', false);
         // Le panneau est superposé au contenu (position absolue) pour ne pas redimensionner la page…
-        $response->assertSeeInOrder(['id="'.$groupKey.'"', 'absolute', 'Confiserie', IngredientTermResource::getUrl('index')], false);
+        $response->assertSeeInOrder(['id="'.$groupKey.'"', 'absolute', 'Confiserie', CandyTypeResource::getUrl('index')], false);
         // … et la page courante y est marquée comme active.
         $response->assertSee('aria-current="page"', false);
     }

@@ -26,8 +26,6 @@ return [
     'permissions.confiserie:view-stock-history.description' => 'Consulter les mouvements de stock.',
     'permissions.confiserie:manage-allergens.label' => 'Allergènes',
     'permissions.confiserie:manage-allergens.description' => 'Gérer la liste des allergènes.',
-    'permissions.confiserie:manage-ingredient-terms.label' => 'Glossaire d\'ingrédients',
-    'permissions.confiserie:manage-ingredient-terms.description' => 'Gérer le glossaire d\'ingrédients utilisé par l\'IA.',
     'permissions.confiserie:manage-invitations.label' => 'Invitations',
     'permissions.confiserie:manage-invitations.description' => 'Gérer les liens d\'invitation donnant accès au site vitrine.',
 
