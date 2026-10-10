@@ -145,13 +145,11 @@ class CreateProductWithAi extends Page implements HasSchemas
                             'ingredients' => ['label' => 'Ingrédients', 'type' => 'textarea'],
                         ]),
 
-                        TextInput::make('bag_weight_kg')->label('Poids d\'un sac')->numeric()->step(0.001)->minValue(0)->suffix('kg'),
-                        TextInput::make('bags_per_carton')->label('Sacs par carton')->numeric()->minValue(1)->default(1)->required(),
-                        TextInput::make('min_stock_bags')->label('Seuil d\'alerte')->numeric()->minValue(0)->default(0)->suffix('sacs'),
-                        TextInput::make('price_per_bag')->label('Prix d\'un sac')->numeric()->step(0.01)->minValue(0)->prefix('€'),
+                        TextInput::make('min_stock_kg')->label('Seuil d\'alerte')->integer()->minValue(0)->default(0)->suffix('kg'),
+                        TextInput::make('price_per_kg')->label('Prix au kg')->numeric()->step(0.01)->minValue(0)->prefix('€'),
                         TextInput::make('initial_stock')
                             ->label('Stock initial')
-                            ->numeric()->minValue(0)->default(0)->suffix('sacs')
+                            ->integer()->minValue(0)->default(0)->suffix('kg')
                             ->visible(fn () => Modules::enabled('Stock')),
                     ]),
 
@@ -240,10 +238,8 @@ class CreateProductWithAi extends Page implements HasSchemas
             'ingredients' => $draft['ingredients'] ?? [],
             'ingredients_scan' => $draft['ingredients_scan'] ?? null,
             'allergens_scan' => $draft['allergens_scan'] ?? null,
-            'bag_weight_kg' => $draft['bag_weight_kg'] ?? null,
             'ean' => $draft['barcode'] ?? null,
-            'bags_per_carton' => 1,
-            'min_stock_bags' => 0,
+            'min_stock_kg' => 0,
             'initial_stock' => 0,
             'allergens_contains' => $byLevel('contains'),
             'allergens_may_contain' => $byLevel('may_contain'),
@@ -271,10 +267,8 @@ class CreateProductWithAi extends Page implements HasSchemas
             'brand' => $data['brand'] ?? null,
             'sku' => $data['sku'] ?? null,
             'ean' => $data['ean'] ?? null,
-            'bag_weight_kg' => $data['bag_weight_kg'] ?? null,
-            'bags_per_carton' => (int) ($data['bags_per_carton'] ?? 1),
-            'min_stock_bags' => (int) ($data['min_stock_bags'] ?? 0),
-            'price_per_bag' => filled($data['price_per_bag'] ?? null) ? (float) $data['price_per_bag'] : null,
+            'min_stock_kg' => (int) ($data['min_stock_kg'] ?? 0),
+            'price_per_kg' => filled($data['price_per_kg'] ?? null) ? (float) $data['price_per_kg'] : null,
             'status' => ($data['publish'] ?? false) ? 'published' : 'draft',
             'image_path' => $image,
         ]);

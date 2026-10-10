@@ -55,12 +55,11 @@
                     <span class="sg-body">
                         <span class="sg-name">{{ $card['name'] }}</span>
                         <span class="sg-brand">{{ $card['brand'] ?: '—' }}</span>
-                        <span class="sg-stock">{{ $card['stock'] }} <small>sac{{ $card['stock'] > 1 ? 's' : '' }}</small></span>
+                        <span class="sg-stock">{{ $card['stock'] }} <small>kg</small></span>
                         <span class="sg-sub">
-                            @if ($card['perCarton'] > 1)
-                                {{ $card['cartons'] }} carton{{ $card['cartons'] > 1 ? 's' : '' }} + {{ $card['loose'] }} sac{{ $card['loose'] > 1 ? 's' : '' }}
-                            @else
-                                {{ $card['weight'] !== '' && $card['weight'] !== '0' ? $card['weight'].' kg par sac' : ' ' }}
+                            soit {{ $plural($card['cartons'], 'carton') }}
+                            @if ($card['loose'])
+                                + {{ $card['loose'] }} kg
                             @endif
                         </span>
                     </span>
@@ -89,16 +88,12 @@
                 <div class="sg-now">
                     <div>
                         <span class="sg-label" style="margin:0">Stock actuel</span>
-                        <strong>{{ $selected['stock'] }}</strong> sac{{ $selected['stock'] > 1 ? 's' : '' }}
+                        <strong>{{ $selected['stock'] }}</strong> kg
                     </div>
                     <div style="text-align:right; font-size:.85rem" class="sg-brand">
-                        @if ($selected['perCarton'] > 1)
-                            1 carton = {{ $selected['perCarton'] }} sacs @if ($selected['weight'] !== '' && $selected['weight'] !== '0')de {{ $selected['weight'] }} kg @endif
-                            <br>soit {{ $plural($selected['cartons'], 'carton') }} + {{ $plural($selected['loose'], 'sac') }}
-                        @elseif ($selected['weight'] !== '' && $selected['weight'] !== '0')
-                            Sac de {{ $selected['weight'] }} kg
-                        @endif
-                        <br>Seuil d'alerte : {{ $plural($selected['min'], 'sac') }}
+                        Sac de {{ $selected['perBag'] }} kg · carton de {{ $selected['perCarton'] }} kg
+                        <br>soit {{ $plural($selected['cartons'], 'carton') }} + {{ $selected['loose'] }} kg
+                        <br>Seuil d'alerte : {{ $selected['min'] }} kg
                     </div>
                 </div>
 
@@ -116,10 +111,11 @@
                         @if ($direction === 'set') Quantité comptée @else Quantité @endif
                     </span>
 
-                    @if ($direction !== 'set' && $selected['perCarton'] > 1)
-                        <div class="sg-seg c2" style="margin-bottom:.5rem">
-                            <button type="button" wire:click="setUnit('carton')" aria-pressed="{{ $unit === 'carton' ? 'true' : 'false' }}">Carton{{ '' }} (×{{ $selected['perCarton'] }})</button>
-                            <button type="button" wire:click="setUnit('bag')" aria-pressed="{{ $unit === 'bag' ? 'true' : 'false' }}">Sac</button>
+                    @if ($direction !== 'set')
+                        <div class="sg-seg c3" style="margin-bottom:.5rem">
+                            <button type="button" wire:click="setUnit('bag')" aria-pressed="{{ $unit === 'bag' ? 'true' : 'false' }}">Sac ({{ $selected['perBag'] }} kg)</button>
+                            <button type="button" wire:click="setUnit('carton')" aria-pressed="{{ $unit === 'carton' ? 'true' : 'false' }}">Carton ({{ $selected['perCarton'] }} kg)</button>
+                            <button type="button" wire:click="setUnit('kg')" aria-pressed="{{ $unit === 'kg' ? 'true' : 'false' }}">kg</button>
                         </div>
                     @endif
 
@@ -140,14 +136,14 @@
                 @if ($preview)
                     <div class="sg-preview @if (! $preview['valid']) bad @endif">
                         @if ($direction === 'set')
-                            Nouveau stock : <strong>{{ $plural($preview['after'], 'sac') }}</strong>
-                            ({{ $preview['delta'] >= 0 ? '+' : '−' }}{{ abs($preview['delta']) }} par rapport à maintenant)
+                            Nouveau stock : <strong>{{ $preview['after'] }} kg</strong>
+                            ({{ $preview['delta'] >= 0 ? '+' : '−' }}{{ abs($preview['delta']) }} kg par rapport à maintenant)
                         @else
-                            <strong>{{ $preview['delta'] >= 0 ? '+' : '−' }}{{ $plural(abs($preview['delta']), 'sac') }}</strong>
-                            → stock : <strong>{{ $plural($preview['after'], 'sac') }}</strong>
+                            <strong>{{ $preview['delta'] >= 0 ? '+' : '−' }}{{ abs($preview['delta']) }} kg</strong>
+                            → stock : <strong>{{ $preview['after'] }} kg</strong>
                         @endif
-                        @if ($selected['perCarton'] > 1 && $preview['valid'])
-                            <span class="sg-sub">— soit {{ $plural($preview['cartons'], 'carton') }} + {{ $plural($preview['loose'], 'sac') }}</span>
+                        @if ($preview['valid'])
+                            <span class="sg-sub">— soit {{ $plural($preview['cartons'], 'carton') }} + {{ $preview['loose'] }} kg</span>
                         @endif
                         @unless ($preview['valid']) — stock insuffisant @endunless
                     </div>
@@ -183,7 +179,7 @@
                         @foreach ($this->history as $movement)
                             <li>
                                 <span>{{ $movement->created_at->format('d/m H:i') }} · {{ $movement->reason->getLabel() }}@if ($movement->staff) · {{ $movement->staff->first_name }}@endif</span>
-                                <span>{{ $movement->quantity > 0 ? '+' : '−' }}{{ abs($movement->quantity) }} → {{ $movement->stock_after }}</span>
+                                <span>{{ $movement->quantity > 0 ? '+' : '−' }}{{ abs($movement->quantity) }} kg → {{ $movement->stock_after }} kg</span>
                             </li>
                         @endforeach
                     </ul>

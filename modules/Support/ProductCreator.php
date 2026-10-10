@@ -16,7 +16,7 @@ use Lunar\Models\ProductType;
 use Lunar\Models\TaxClass;
 
 /**
- * Crée un « bonbon » complet dans Lunar : produit (attributs traduits), variant unique (le sac),
+ * Crée un « bonbon » complet dans Lunar : produit (attributs traduits), variant unique (vendu au kg),
  * prix, disponibilité et photo. Utilisé par la création assistée par IA et par les données de démo.
  */
 class ProductCreator
@@ -31,10 +31,8 @@ class ProductCreator
      *     brand?: ?string,
      *     sku?: ?string,
      *     ean?: ?string,
-     *     bag_weight_kg?: int|float|null,
-     *     bags_per_carton?: int,
-     *     min_stock_bags?: int,
-     *     price_per_bag?: ?float,
+     *     min_stock_kg?: int,
+     *     price_per_kg?: ?float,
      *     status?: 'published'|'draft',
      *     image_path?: ?string,
      * } $data
@@ -44,8 +42,7 @@ class ProductCreator
         return DB::transaction(function () use ($data) {
             $attributes = collect([
                 'name' => self::translated($data['name']),
-                'bags_per_carton' => new Number(max(1, (int) ($data['bags_per_carton'] ?? 1))),
-                'min_stock_bags' => new Number(max(0, (int) ($data['min_stock_bags'] ?? 0))),
+                'min_stock_kg' => new Number(max(0, (int) ($data['min_stock_kg'] ?? 0))),
             ]);
 
             foreach (['description', 'ingredients'] as $handle) {
@@ -75,16 +72,16 @@ class ProductCreator
                 'stock' => 0,
                 'purchasable' => 'always',
                 'shippable' => true,
-                'weight_value' => $data['bag_weight_kg'] ?? 0,
+                'weight_value' => 1, // le stock et le prix se comptent au kg
                 'weight_unit' => 'kg',
             ]);
 
-            if (($data['price_per_bag'] ?? null) !== null) {
+            if (($data['price_per_kg'] ?? null) !== null) {
                 Price::create([
                     'priceable_type' => $variant->getMorphClass(),
                     'priceable_id' => $variant->id,
                     'currency_id' => Currency::getDefault()->id,
-                    'price' => (int) round($data['price_per_bag'] * 100),
+                    'price' => (int) round($data['price_per_kg'] * 100),
                     'min_quantity' => 1,
                 ]);
             }

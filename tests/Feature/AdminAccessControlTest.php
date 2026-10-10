@@ -7,11 +7,16 @@ use Lunar\Admin\Filament\Pages\Dashboard;
 use Lunar\Admin\Filament\Resources\TaxClassResource;
 use Lunar\Admin\Models\Staff;
 use Modules\Allergenes\Filament\Resources\AllergenResource;
+use Modules\Analyse\Filament\Pages\SalesAnalysis;
+use Modules\Analyse\Filament\Pages\SalesProjection;
+use Modules\Analyse\Filament\Pages\UpcomingOrders;
+use Modules\Fournisseurs\Filament\Resources\SupplierResource;
 use Modules\Ia\Filament\Pages\CreateProductWithAi;
 use Modules\Ia\Filament\Pages\IaSettings;
 use Modules\Invitations\Filament\Resources\InvitationResource;
 use Modules\Panneaux\Filament\Resources\PanelResource;
 use Modules\Stock\Filament\Pages\StockGrid;
+use Modules\Stock\Filament\Pages\StockSettings;
 use Modules\Stock\Filament\Resources\StockMovementResource;
 use Modules\Types\Filament\Resources\CandyTypeResource;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -117,6 +122,11 @@ class AdminAccessControlTest extends TestCase
             'historique du stock' => [StockMovementResource::class, 'confiserie:view-stock-history'],
             'allergènes' => [AllergenResource::class, 'confiserie:manage-allergens'],
             'invitations' => [InvitationResource::class, 'confiserie:manage-invitations'],
+            'fournisseurs' => [SupplierResource::class, 'confiserie:manage-suppliers'],
+            'réglages du stock' => [StockSettings::class, 'settings:manage-stock'],
+            'analyse des ventes' => [SalesAnalysis::class, 'confiserie:view-analytics'],
+            'projection' => [SalesProjection::class, 'confiserie:view-analytics'],
+            'commandes' => [UpcomingOrders::class, 'confiserie:view-analytics'],
         ];
     }
 }

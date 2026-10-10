@@ -21,7 +21,8 @@ use UnitEnum;
 
 /**
  * Grille photo des bonbons ; un clic ouvre un overlay pour entrer / sortir du stock
- * en sacs ou en cartons (1 carton = N sacs), ou fixer la valeur après un inventaire.
+ * en sacs (vente), en cartons (achat) ou en kg — conditionnements du fournisseur principal, sinon les réglages par défaut —,
+ * ou fixer la valeur après un inventaire.
  */
 class StockGrid extends Page
 {
@@ -111,7 +112,7 @@ class StockGrid extends Page
             ->where('product_variant_id', (int) $this->variantId)->latest()->limit(5)->get();
     }
 
-    /** Effet de la saisie en cours : sacs de différence et stock résultant. */
+    /** Effet de la saisie en cours : kg de différence et stock résultant. */
     #[Computed]
     public function preview(): ?array
     {
@@ -122,11 +123,15 @@ class StockGrid extends Page
         }
 
         $quantity = max(0, (int) $this->quantity);
-        $bags = $this->unit === StockService::UNIT_CARTON ? $quantity * $card['perCarton'] : $quantity;
+        $kg = $quantity * match ($this->unit) {
+            StockService::UNIT_CARTON => $card['perCarton'],
+            StockService::UNIT_BAG => $card['perBag'],
+            default => 1,
+        };
         $delta = match ($this->direction) {
-            'in' => $bags,
-            'out' => -$bags,
-            default => $bags - $card['stock'],
+            'in' => $kg,
+            'out' => -$kg,
+            default => $kg - $card['stock'],
         };
         $after = $card['stock'] + $delta;
         [$cartons, $loose] = StockService::breakdown($after, $card['perCarton']);
@@ -156,18 +161,19 @@ class StockGrid extends Page
         $card = $this->selected;
 
         if ($this->direction === 'set') {
-            // Inventaire : on compte des sacs, en partant du stock actuel.
-            $this->unit = StockService::UNIT_BAG;
+            // Inventaire : on pèse le stock (kg), en partant du stock actuel.
+            $this->unit = StockService::UNIT_KG;
             $this->quantity = $card['stock'] ?? 0;
         } else {
-            $this->unit = ($card['perCarton'] ?? 1) > 1 ? StockService::UNIT_CARTON : StockService::UNIT_BAG;
+            // Les réceptions arrivent en cartons ; les sorties se comptent en sacs (un sac entamé est déduit en entier).
+            $this->unit = $this->direction === 'in' ? StockService::UNIT_CARTON : StockService::UNIT_BAG;
             $this->quantity = 1;
         }
     }
 
     public function setUnit(string $unit): void
     {
-        $this->unit = $unit === StockService::UNIT_CARTON ? StockService::UNIT_CARTON : StockService::UNIT_BAG;
+        $this->unit = in_array($unit, [StockService::UNIT_CARTON, StockService::UNIT_BAG], true) ? $unit : StockService::UNIT_KG;
     }
 
     public function adjust(int $step): void
@@ -219,13 +225,13 @@ class StockGrid extends Page
 
         Notification::make()->success()
             ->title('Stock mis à jour')
-            ->body(sprintf('%s : %s%d sac(s) → %d en stock', $card['name'], $delta > 0 ? '+' : '−', abs($delta), $variant->stock))
+            ->body(sprintf('%s : %s%d kg → %d kg en stock', $card['name'], $delta > 0 ? '+' : '−', abs($delta), $variant->stock))
             ->send();
 
         $this->closeOverlay();
     }
 
-    /** @return Collection<int, array<string, mixed>> une carte par produit (premier variant = le sac) */
+    /** @return Collection<int, array<string, mixed>> une carte par produit (premier variant) */
     protected function loadCards(): Collection
     {
         $placement = Modules::enabled('Panneaux');
@@ -245,7 +251,9 @@ class StockGrid extends Page
         $variant = $product->variants->first();
         $variant->setRelation('product', $product);
 
-        $perCarton = StockService::bagsPerCarton($variant);
+        $perCarton = StockService::kgPerCarton($variant);
+
+        $perBag = StockService::kgPerBag($variant);
         $min = StockService::minStock($variant);
         [$cartons, $loose] = StockService::breakdown($variant->stock, $perCarton);
         $panels = $placement ? $product->panels->filter(fn ($p) => $p->pivot->active) : collect();
@@ -258,8 +266,8 @@ class StockGrid extends Page
             'image' => $product->getThumbnailImage() ?: null,
             'stock' => $variant->stock,
             'perCarton' => $perCarton,
+            'perBag' => $perBag,
             'min' => $min,
-            'weight' => rtrim(rtrim(number_format((float) $variant->weight_value, 3, ',', ''), '0'), ','),
             'cartons' => $cartons,
             'loose' => $loose,
             'level' => $variant->stock <= 0 ? 'out' : ($variant->stock <= $min ? 'low' : 'ok'),

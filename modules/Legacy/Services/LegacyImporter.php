@@ -32,7 +32,7 @@ use Modules\Types\Support\ProductCandyType;
  *   photo        -> image(s) du produit, prises dans le dossier des images : « <SKU>-<nom>.jpg » (ex. BB-030-violette.jpg),
  *                  la première par ordre alphabétique est l'image principale
  *
- * Ce que l'ancienne base ne contenait pas n'est pas inventé : stock à 0, conditionnement (sacs par carton) à 1,
+ * Ce que l'ancienne base ne contenait pas n'est pas inventé : stock à 0, seuil d'alerte à 0, conditionnement laissé au fournisseur (sinon carton par défaut),
  * traductions NL/EN vides (la vitrine retombe sur le français).
  */
 class LegacyImporter
@@ -285,8 +285,7 @@ class LegacyImporter
                     'ingredients' => ['fr' => $item['ingredients']],
                     'brand' => $item['brand'],
                     'sku' => $item['sku'],
-                    'bags_per_carton' => 1,
-                    'min_stock_bags' => 0,
+                    'min_stock_kg' => 0,
                     'status' => 'published',
                 ]);
 

@@ -9,6 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Lunar\Admin\Filament\Resources\ProductResource;
 use Modules\Stock\Enums\StockReason;
 use Modules\Stock\Filament\Resources\StockMovementResource\Pages\ListStockMovements;
 use Modules\Stock\Models\StockMovement;
@@ -52,21 +53,26 @@ class StockMovementResource extends Resource
                     ->label('Bonbon')
                     ->state(fn (StockMovement $m) => $m->variant?->product?->attr('name') ?? '—')
                     ->description(fn (StockMovement $m) => $m->variant?->sku)
+                    ->url(fn (StockMovement $m) => $m->variant?->product_id ? ProductResource::getUrl('edit', ['record' => $m->variant->product_id]) : null)
                     ->searchable(query: fn (Builder $query, string $search) => $query->whereHas('variant', fn (Builder $v) => $v
                         ->where('sku', 'like', "%{$search}%")
                         ->orWhereHas('product', fn (Builder $p) => $p->where('attribute_data', 'like', "%{$search}%")))),
                 TextColumn::make('quantity')
-                    ->label('Sacs')
+                    ->label('Quantité')
                     ->badge()
                     ->color(fn (int $state) => $state >= 0 ? 'success' : 'danger')
-                    ->formatStateUsing(fn (int $state) => ($state >= 0 ? '+' : '−').abs($state))
+                    ->formatStateUsing(fn (int $state) => ($state >= 0 ? '+' : '−').abs($state).' kg')
                     ->sortable(),
                 TextColumn::make('input')
                     ->label('Saisie')
                     ->state(fn (StockMovement $m) => $m->input_unit
-                        ? $m->input_quantity.' '.($m->input_unit === 'carton' ? 'carton(s)' : 'sac(s)')
+                        ? $m->input_quantity.' '.match ($m->input_unit) {
+                            'carton' => 'carton(s)',
+                            'bag' => 'sac(s)',
+                            default => 'kg',
+                        }
                         : '—'),
-                TextColumn::make('stock_after')->label('Stock après')->sortable(),
+                TextColumn::make('stock_after')->label('Stock après')->suffix(' kg')->sortable(),
                 TextColumn::make('reason')->label('Motif')->badge(),
                 TextColumn::make('staff.first_name')->label('Par')->placeholder('Système'),
                 TextColumn::make('note')->label('Note')->placeholder('—')->wrap(),

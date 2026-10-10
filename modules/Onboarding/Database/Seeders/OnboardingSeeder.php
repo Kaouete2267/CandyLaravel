@@ -94,7 +94,7 @@ class OnboardingSeeder extends Seeder
                     [
                         'key' => 'stock',
                         'title' => ['fr' => 'Suivre le stock au quotidien'],
-                        'description' => ['fr' => 'Depuis la grille photo, enregistrez chaque entrée ou sortie (par sac ou par carton) directement sur le bonbon concerné.'],
+                        'description' => ['fr' => 'Depuis la grille photo, enregistrez chaque entrée ou sortie (en kg ou en cartons) directement sur le bonbon concerné.'],
                         'icon' => 'heroicon-o-archive-box',
                         'cta_label' => ['fr' => 'Ouvrir la gestion du stock'],
                         'cta_route' => 'filament.lunar.pages.stock',

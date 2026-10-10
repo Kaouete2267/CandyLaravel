@@ -12,10 +12,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_variant_id')->constrained('lunar_product_variants')->cascadeOnDelete();
             $table->foreignId('staff_id')->nullable()->constrained('lunar_staff')->nullOnDelete();
-            $table->integer('quantity');                        // en sacs, signé
+            $table->integer('quantity');                        // en kg, signé
             $table->integer('stock_after');                     // stock du variant après le mouvement
             $table->string('reason', 20);                       // StockReason
-            $table->string('input_unit', 10)->nullable();       // bag | carton (saisie d'origine)
+            $table->string('input_unit', 10)->nullable();       // kg | carton (saisie d'origine)
             $table->unsignedInteger('input_quantity')->nullable();
             $table->string('note')->nullable();
             $table->timestamps();

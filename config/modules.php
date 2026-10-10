@@ -2,7 +2,9 @@
 
 use Modules\Admin\AdminServiceProvider;
 use Modules\Allergenes\AllergenesServiceProvider;
+use Modules\Analyse\AnalyseServiceProvider;
 use Modules\BackendHeader\BackendHeaderServiceProvider;
+use Modules\Fournisseurs\FournisseursServiceProvider;
 use Modules\Ia\IaServiceProvider;
 use Modules\Invitations\InvitationsServiceProvider;
 use Modules\Legacy\LegacyServiceProvider;
@@ -28,6 +30,8 @@ return [
         TypesServiceProvider::class,
         AllergenesServiceProvider::class,
         StockServiceProvider::class,
+        FournisseursServiceProvider::class,
+        AnalyseServiceProvider::class,
         InvitationsServiceProvider::class,
         IaServiceProvider::class,
         VitrineServiceProvider::class,

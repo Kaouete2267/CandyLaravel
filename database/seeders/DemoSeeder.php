@@ -28,31 +28,31 @@ class DemoSeeder extends Seeder
                 'sku' => 'HAR-CROC', 'brand' => 'Haribo', 'color' => [239, 68, 68],
                 'name' => ['fr' => 'Croco', 'nl' => 'Krokodil', 'en' => 'Croco'],
                 'description' => ['fr' => 'Crocodiles moelleux au goût fruité.', 'nl' => 'Zachte krokodillen met fruitsmaak.', 'en' => 'Soft, fruity crocodile gummies.'],
-                'allergens' => [], 'weight' => 3, 'perCarton' => 4, 'stock' => 6, 'price' => 24.9,
+                'allergens' => [], 'stock' => 18, 'price' => 8.3,
             ],
             [
                 'sku' => 'HAR-GOLD', 'brand' => 'Haribo', 'color' => [245, 158, 11],
                 'name' => ['fr' => 'Ours d\'or', 'nl' => 'Goudbeertjes', 'en' => 'Goldbears'],
                 'description' => ['fr' => 'Les célèbres oursons en gélatine aux fruits.', 'nl' => 'De beroemde fruitgom beertjes.', 'en' => 'The famous fruit gummy bears.'],
-                'allergens' => [['soy', 'may_contain']], 'weight' => 3, 'perCarton' => 4, 'stock' => 1, 'price' => 26.5,
+                'allergens' => [['soy', 'may_contain']], 'stock' => 3, 'price' => 8.85,
             ],
             [
                 'sku' => 'JB-BEAN', 'brand' => 'Jelly Belly', 'color' => [168, 85, 247],
                 'name' => ['fr' => 'Jelly Beans assortis', 'nl' => 'Jelly Beans mix', 'en' => 'Assorted Jelly Beans'],
                 'description' => ['fr' => 'Haricots sucrés aux 20 saveurs.', 'nl' => 'Zoete bonen met 20 smaken.', 'en' => 'Sweet beans in 20 flavours.'],
-                'allergens' => [], 'weight' => 1, 'perCarton' => 10, 'stock' => 25, 'price' => 12.9,
+                'allergens' => [], 'stock' => 25, 'price' => 12.9,
             ],
             [
                 'sku' => 'LON-CHOC', 'brand' => 'Lonka', 'color' => [120, 72, 40],
                 'name' => ['fr' => 'Caramels au chocolat', 'nl' => 'Chocoladekaramels', 'en' => 'Chocolate caramels'],
                 'description' => ['fr' => 'Caramels mous enrobés de chocolat au lait.', 'nl' => 'Zachte karamels met melkchocolade.', 'en' => 'Soft caramels coated in milk chocolate.'],
-                'allergens' => [['milk', 'contains'], ['soy', 'contains'], ['tree_nuts', 'may_contain']], 'weight' => 2, 'perCarton' => 6, 'stock' => 8, 'price' => 18.5,
+                'allergens' => [['milk', 'contains'], ['soy', 'contains'], ['tree_nuts', 'may_contain']], 'stock' => 16, 'price' => 9.25,
             ],
             [
                 'sku' => 'LON-NOUG', 'brand' => 'Lonka', 'color' => [234, 179, 8],
                 'name' => ['fr' => 'Nougat tendre', 'nl' => 'Zachte nougat', 'en' => 'Soft nougat'],
                 'description' => ['fr' => 'Nougat aux amandes.', 'nl' => 'Nougat met amandelen.', 'en' => 'Almond nougat.'],
-                'allergens' => [['tree_nuts', 'contains'], ['eggs', 'contains'], ['milk', 'may_contain']], 'weight' => 1.5, 'perCarton' => 8, 'stock' => 0, 'price' => 21.0,
+                'allergens' => [['tree_nuts', 'contains'], ['eggs', 'contains'], ['milk', 'may_contain']], 'stock' => 0, 'price' => 14.0,
             ],
         ];
 
@@ -66,10 +66,8 @@ class DemoSeeder extends Seeder
                 'description' => $row['description'],
                 'brand' => $row['brand'],
                 'sku' => $row['sku'],
-                'bag_weight_kg' => $row['weight'],
-                'bags_per_carton' => $row['perCarton'],
-                'min_stock_bags' => 2,
-                'price_per_bag' => $row['price'],
+                'min_stock_kg' => 5,
+                'price_per_kg' => $row['price'],
                 'image_path' => $this->placeholder($row['sku'], $row['name']['fr'], $row['color']),
             ]);
 

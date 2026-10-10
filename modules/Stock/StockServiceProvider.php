@@ -4,6 +4,8 @@ namespace Modules\Stock;
 
 use Illuminate\Support\ServiceProvider;
 use Lunar\Models\ProductVariant;
+use Modules\Stock\Console\ClearStockCommand;
+use Modules\Stock\Console\GenerateStockDatasetCommand;
 use Modules\Stock\Enums\StockReason;
 use Modules\Stock\Filament\StockPlugin;
 use Modules\Stock\Models\StockMovement;
@@ -25,6 +27,10 @@ class StockServiceProvider extends ServiceProvider
     {
         $this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
         $this->loadViewsFrom(__DIR__.'/resources/views', 'stock');
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([GenerateStockDatasetCommand::class, ClearStockCommand::class]);
+        }
 
         // Une correction manuelle du stock (fiche produit Lunar, import…) laisse aussi une trace dans le journal.
         ProductVariant::updating(function (ProductVariant $variant) {

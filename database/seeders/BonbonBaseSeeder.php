@@ -103,8 +103,7 @@ class BonbonBaseSeeder extends Seeder
             ['product', $group, 'ingredients_scan', ['fr' => 'Ingrédients bruts (scan)', 'nl' => 'Ruwe ingrediënten (scan)', 'en' => 'Raw ingredients (scan)'], Text::class, ['richtext' => false], false, false],
             // Mentions d'allergènes lues sur l'emballage (traces, mots en gras…), pour justifier les allergènes cochés.
             ['product', $group, 'allergens_scan', ['fr' => 'Mentions allergènes (scan)', 'nl' => 'Allergenenvermeldingen (scan)', 'en' => 'Allergen statements (scan)'], Text::class, ['richtext' => false], false, false],
-            ['product', $group, 'bags_per_carton', ['fr' => 'Sacs par carton', 'nl' => 'Zakken per doos', 'en' => 'Bags per carton'], Number::class, ['min' => 1], false, false],
-            ['product', $group, 'min_stock_bags', ['fr' => 'Seuil d\'alerte (sacs)', 'nl' => 'Alarmdrempel (zakken)', 'en' => 'Alert threshold (bags)'], Number::class, ['min' => 0], false, false],
+            ['product', $group, 'min_stock_kg', ['fr' => 'Seuil d\'alerte (kg)', 'nl' => 'Alarmdrempel (kg)', 'en' => 'Alert threshold (kg)'], Number::class, ['min' => 0], false, false],
             ['collection', $collectionGroup, 'name', ['fr' => 'Nom', 'nl' => 'Naam', 'en' => 'Name'], TranslatedText::class, ['richtext' => false], true, true],
             ['collection', $collectionGroup, 'description', ['fr' => 'Description', 'nl' => 'Beschrijving', 'en' => 'Description'], TranslatedText::class, ['richtext' => true], false, false],
         ];

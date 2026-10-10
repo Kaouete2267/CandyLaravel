@@ -49,7 +49,7 @@ Règles :
 {{mentions_allergenes}}
 PROMPT, 'Assemble les autres sections : retirer une variable retire la section du prompt.'),
                 new AiPromptSection('role', 'Rôle', <<<'PROMPT'
-Tu es l'assistant de catalogue d'une confiserie qui vend des bonbons en vrac (au poids, en sacs).
+Tu es l'assistant de catalogue d'une confiserie qui vend des bonbons en vrac (au poids, au kg).
 Crée une fiche produit à partir des informations ci-dessous.
 PROMPT),
                 new AiPromptSection('regles', 'Règles', <<<'PROMPT'
@@ -60,7 +60,7 @@ PROMPT),
   d'origine, sans corriger, traduire ni réorganiser, SANS la mention d'allergènes qui la suit éventuellement. Si
   l'emballage l'affiche en plusieurs langues, uniquement celle en français si elle est présente, sinon la première
   lisible. Chaîne vide sans photo lisible.
-- `bag_weight_kg` et `barcode` : seulement s'ils sont lisibles sur les photos, sinon null.
+- `barcode` : seulement s'il est lisible sur les photos, sinon null.
 - `brand` : marque du fabricant, ou null.
 - `notes` : signale en français ce qui est incertain ou illisible (à vérifier par un humain), sinon null.
 PROMPT, 'Les noms entre accents graves (`name`, `ingredients`…) sont les champs de la réponse : ne les renommez pas.'),
@@ -73,7 +73,7 @@ PROMPT, 'Les noms entre accents graves (`name`, `ingredients`…) sont les champ
      * contrôle humain (mêmes champs que ceux remplis par {@see IngredientsScanner}).
      *
      * @param  array<int, array{mime: string, data: string}>  $images
-     * @return array{brand: ?string, name: array<string,string>, description: array<string,string>, ingredients: array<string,string>, ingredients_scan: string, allergens_scan: string, bag_weight_kg: ?float, barcode: ?string, allergens: array<int, array{code: string, level: string}>, notes: ?string}
+     * @return array{brand: ?string, name: array<string,string>, description: array<string,string>, ingredients: array<string,string>, ingredients_scan: string, allergens_scan: string, barcode: ?string, allergens: array<int, array{code: string, level: string}>, notes: ?string}
      */
     public function draft(?string $hint, array $images = []): array
     {
@@ -113,7 +113,6 @@ PROMPT, 'Les noms entre accents graves (`name`, `ingredients`…) sont les champ
             'ingredients' => $localized,
             'ingredients_scan' => ['type' => 'STRING'],
             ...AllergensScan::schemaProperties(),
-            'bag_weight_kg' => ['type' => 'NUMBER', 'nullable' => true],
             'barcode' => ['type' => 'STRING', 'nullable' => true],
             'notes' => ['type' => 'STRING', 'nullable' => true],
         ];
