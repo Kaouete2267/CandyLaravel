@@ -15,11 +15,11 @@
 /auth.json
 /node_modules
 /public/build
-/public/css/filament
+/public/css/*
 /public/fonts-manifest.dev.json
 /public/fonts/filament
 /public/hot
-/public/js/filament
+/public/js/*
 /public/storage
 /storage/*.key
 /storage/pail
@@ -45,3 +45,11 @@ Thumbs.db
 
 # Assets Livewire publiés par deploy.sh
 /public/vendor/livewire
+
+.bash_history
+.cache/*
+.config/*
+.local/*
+.ovhconfig
+.ssh/*
+.subversion/*
